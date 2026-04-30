@@ -1,0 +1,1682 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-title" content="Multi-TF Report" />
+  <meta name="format-detection" content="telephone=no" />
+  <title>Printable Multi-TF Report</title>
+  <style>
+    :root {
+      --accent: #ff7a00;
+      --app-font: "Aptos Display", Aptos, "Segoe UI", Calibri, Arial, sans-serif;
+      --accent-2: #f59e0b;
+      --accent-soft: #fff3e8;
+      --ink: #0f172a;
+      --ink-soft: #334155;
+      --line: #cbd5e1;
+      --line-strong: #64748b;
+      --panel: #ffffff;
+      --page-bg: #eef2f7;
+      --paper: #ffffff;
+      --muted: #6b7280;
+      --navy: #111827;
+      --shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
+      --red: #b91c1c;
+      --red-soft: #fef2f2;
+      --lime: #3f7f00;
+      --lime-soft: #f7fee7;
+      --violet: #7c3aed;
+      --violet-soft: #f5f3ff;
+      --yellow: #a16207;
+      --yellow-soft: #fefce8;
+    }
+    * { box-sizing: border-box; }
+    html { -webkit-text-size-adjust: 100%; }
+    button, input, select, textarea { font-size: 16px; touch-action: manipulation; }
+    input, select, textarea { -webkit-user-select: text; user-select: text; }
+    html, body { margin: 0; padding: 0; background: var(--page-bg); color: var(--ink); font-family: var(--app-font); font-size: 16px; }
+    .app { max-width: 1760px; margin: 0 auto; padding: 20px; display: grid; grid-template-columns: minmax(720px, 1.1fr) minmax(430px, 0.9fr); gap: 20px; align-items: start; }
+    .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 16px; box-shadow: var(--shadow); }
+    .section { margin-top: 16px; }
+    .section:first-child { margin-top: 0; }
+    .section-title { display: inline-block; padding: 6px 10px; background: var(--navy); border-left: 4px solid var(--accent); color: #fff; font-size: 13px; font-weight: 800; letter-spacing: 0.09em; text-transform: uppercase; margin: 0 0 12px; }
+    .grid-3, .grid-4, .grid-5 { display: grid; gap: 12px; }
+    .grid-3 { grid-template-columns: repeat(3, minmax(0,1fr)); }
+    .grid-4 { grid-template-columns: repeat(4, minmax(0,1fr)); }
+    .grid-5 { grid-template-columns: repeat(5, minmax(0,1fr)); }
+    .editor-grid-2, .summary-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; align-items: start; }
+    .setup-grid { display: grid; grid-template-columns: 1fr; gap: 12px; align-items: start; }
+    .editor-subpanel, .summary-block { border: 1px solid var(--line); border-radius: 12px; padding: 10px; background: #fff; }
+    .summary-block { background: linear-gradient(180deg, #fff 0%, #fcfcfd 100%); }
+    .subpanel-title { margin: 0 0 10px; font-size: 13px; font-weight: 900; letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent); }
+    .field label { display: block; font-size: 12.5px; font-weight: 800; letter-spacing: 0.05em; text-transform: uppercase; color: var(--ink-soft); margin-bottom: 6px; }
+    .field input, .field select { width: 100%; padding: 11px 13px; border: 1px solid var(--line-strong); background: #fff; color: var(--ink); border-radius: 8px; font-size: 16px; font-family: var(--app-font); }
+    .field input[type="file"] { padding: 8px 0; border: none; }
+    .field input[type="number"]::-webkit-outer-spin-button, .field input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+    .field input[type="number"] { -moz-appearance: textfield; }
+    .toolbar { margin-top: 14px; display: flex; flex-wrap: wrap; gap: 10px; }
+    .btn { appearance: none; border: 1px solid var(--navy); background: #fff; color: var(--navy); padding: 10px 14px; border-radius: 8px; font-size: 12.5px; font-weight: 800; letter-spacing: 0.05em; text-transform: uppercase; cursor: pointer; font-family: var(--app-font); }
+    .btn-primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+    .btn-inline { padding: 6px 8px; font-size: 11px; border-radius: 7px; }
+    .status-line { margin-top: 10px; min-height: 18px; font-size: 12px; color: var(--muted); }
+    .editor-table, .space-table { width: 100%; border-collapse: collapse; table-layout: auto; font-size: 14px; }
+    .editor-table th, .editor-table td, .space-table th, .space-table td { border: 1px solid var(--line); padding: 8px; vertical-align: top; }
+    .editor-table th, .space-table th { text-align: left; background: #f8fafc; font-size: 11px; font-weight: 800; letter-spacing: 0.05em; text-transform: uppercase; color: var(--navy); white-space: normal; line-height: 1.2; }
+    .editor-table select, .editor-table input, .space-table select, .space-table input { width: 100%; max-width: 100%; min-width: 0; font-family: var(--app-font); font-size: 16px; }
+    .table-scroll { width: 100%; overflow-x: auto; overflow-y: hidden; -webkit-overflow-scrolling: touch; }
+    .candles-table { min-width: 900px; }
+    .space-table { min-width: 860px; }
+    .tf-cell { width: 62px; min-width: 62px; font-weight: 800; text-align: center; background: var(--accent-soft); white-space: nowrap; }
+    .attr-wrap { display: grid; grid-template-columns: repeat(2, minmax(110px, 1fr)); gap: 8px 14px; align-items: start; }
+    .check { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; white-space: nowrap; color: var(--ink); }
+    .indicator-card { border: 1px solid var(--line); border-radius: 12px; padding: 12px; margin-top: 12px; background: #fff; }
+    .indicator-card:first-child { margin-top: 0; }
+    .indicator-card-header { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding-bottom: 8px; border-bottom: 1px solid var(--line); margin-bottom: 10px; }
+    .indicator-card-title { font-size: 16px; font-weight: 900; letter-spacing: 0.08em; text-transform: uppercase; color: var(--navy); }
+    .card-section { margin-top: 12px; }
+    .card-section:first-of-type { margin-top: 0; }
+    .card-section-title { margin: 0 0 8px; font-size: 12px; font-weight: 900; letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent); }
+    .indicator-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .indicator-box { border: 1px solid var(--line); border-radius: 10px; padding: 10px; background: #fff; min-height: 120px; }
+    .indicator-box-header { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 8px; }
+    .indicator-name { font-size: 12px; font-weight: 900; letter-spacing: 0.05em; text-transform: uppercase; }
+    .indicator-meta { font-size: 11px; color: var(--muted); white-space: nowrap; }
+    .chips { display: flex; flex-wrap: wrap; gap: 6px; min-height: 28px; margin-bottom: 8px; }
+    .chip { display: inline-flex; align-items: center; gap: 6px; padding: 4px 8px; border-radius: 999px; border: 1px solid #fed7aa; background: #fff7ed; color: #7c2d12; font-size: 11px; line-height: 1.2; }
+    details.selector { border-top: 1px dashed var(--line); padding-top: 8px; }
+    details.selector > summary { cursor: pointer; list-style: none; font-size: 11px; font-weight: 800; letter-spacing: 0.05em; text-transform: uppercase; color: var(--ink-soft); }
+    details.selector > summary::-webkit-details-marker { display: none; }
+    .selector-body { margin-top: 8px; max-height: 320px; overflow: auto; padding-right: 4px; }
+    .option-group { border: 1px solid var(--line); border-radius: 10px; padding: 8px; margin-top: 8px; }
+    .option-group:first-child { margin-top: 0; }
+    .option-group-title { display: inline-block; margin: 0 0 8px; padding: 4px 8px; border-radius: 999px; border: 1px solid var(--line); background: #fafafa; color: var(--ink); font-size: 11px; font-weight: 800; letter-spacing: 0.04em; text-transform: uppercase; }
+    .option-group-title[data-color="red"] { color: var(--red); border-color: #fecaca; background: var(--red-soft); }
+    .option-group-title[data-color="lime"] { color: var(--lime); border-color: #d9f99d; background: var(--lime-soft); }
+    .option-group-title[data-color="violet"] { color: var(--violet); border-color: #ddd6fe; background: var(--violet-soft); }
+    .option-group-title[data-color="yellow"] { color: var(--yellow); border-color: #fde68a; background: var(--yellow-soft); }
+    .option-list { display: grid; grid-template-columns: 1fr; gap: 6px; }
+    .option-item { display: flex; align-items: flex-start; gap: 6px; font-size: 12px; line-height: 1.3; }
+    .space-note { font-size: 11px; color: var(--muted); padding: 8px 10px; border: 1px dashed var(--line); border-radius: 10px; background: #f8fafc; margin-bottom: 10px; }
+    .space-table th:nth-child(1) { width: 60px; text-align: center; }
+    .space-table th:nth-child(2) { width: 160px; }
+    .space-table th:nth-child(3) { width: 150px; }
+    .space-table th:nth-child(4) { width: 140px; }
+    .space-table th:nth-child(5) { width: 150px; }
+    .space-table th:nth-child(6) { width: 120px; }
+    .space-gap { font-weight: 700; }
+    .space-row-off { opacity: 0.55; }
+    .verdict-hint { font-size: 11px; color: var(--ink-soft); padding: 8px 10px; border: 1px dashed var(--line); border-radius: 10px; background: #f8fafc; }
+    .paper-wrap { position: sticky; top: 20px; }
+    .paper-shell { background: #dde4ee; border-radius: 14px; padding: 14px; border: 1px solid #cbd5e1; }
+    .paper { width: 210mm; min-height: 297mm; max-width: 100%; margin: 0 auto; background: var(--paper); color: var(--ink); box-shadow: 0 10px 28px rgba(15, 23, 42, 0.16); padding: 9mm 9mm 10mm; overflow: hidden; }
+    .report-header { border-bottom: 2px solid var(--navy); padding-bottom: 7px; margin-bottom: 10px; }
+    .report-title { font-size: 24px; font-weight: 900; letter-spacing: 0.035em; text-transform: uppercase; line-height: 1.12; word-break: break-word; color: var(--navy); }
+    .report-meta { margin-top: 4px; font-size: 11.5px; font-weight: 700; color: var(--ink-soft); text-transform: uppercase; letter-spacing: 0.05em; }
+    .summary-block-title, .tf-report-title, .chapter-title { margin: 0 0 6px; padding: 4px 8px; background: var(--navy); border-left: 4px solid var(--accent); color: #fff; font-size: 11.5px; font-weight: 900; letter-spacing: 0.08em; text-transform: uppercase; display: inline-block; }
+    .report-table { width: 100%; border-collapse: collapse; margin-top: 2px; font-size: 11.5px; }
+    .report-table th, .report-table td { border: 1px solid #7b8794; padding: 5px 6px; text-align: left; vertical-align: top; }
+    .report-table th { background: #e5e7eb; color: var(--navy); font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; font-size: 9.5px; }
+    .summary-table-4 td:nth-child(odd), .summary-table-4 th:nth-child(odd) { font-weight: 800; }
+    .summary-table-4 td:nth-child(1), .summary-table-4 td:nth-child(3), .summary-table-4 th:nth-child(1), .summary-table-4 th:nth-child(3) { width: 11%; }
+    .summary-table-4 td:nth-child(2), .summary-table-4 td:nth-child(4), .summary-table-4 th:nth-child(2), .summary-table-4 th:nth-child(4) { width: 39%; }
+    .tf-report { margin-top: 10px; break-inside: auto; page-break-inside: auto; }
+    .tf-chapter { margin-top: 8px; break-inside: auto; page-break-inside: auto; }
+    .indicator-report-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .indicator-report-box { border: 1px solid #8ea0b5; padding: 6px 7px; min-height: 56px; }
+    .indicator-report-name { font-size: 10.8px; font-weight: 900; letter-spacing: 0.05em; text-transform: uppercase; color: var(--navy); margin-bottom: 3px; }
+    .indicator-report-body { font-size: 11px; }
+    .report-list-item { margin-top: 1px; line-height: 1.25; }
+    .report-list-item:first-child { margin-top: 0; }
+    .dash { color: #888; }
+    .close-line { margin: 1px 0 6px; font-size: 11.5px; font-weight: 700; }
+    .space-item-line { margin-top: 2px; font-size: 11.2px; line-height: 1.32; }
+    .summary-stack .summary-block + .summary-block { margin-top: 12px; }
+    .fillable-writing-block { position: relative; margin-top: 6px; }
+    .fillable-textarea { position: absolute; inset: 0; width: 100%; height: 100%; padding: 0 2px; border: none; background: transparent; color: var(--ink); font-family: var(--app-font); font-size: 11.5px; line-height: 0.6cm; resize: none; overflow: hidden; }
+    .fillable-textarea:focus { outline: 1px dashed var(--accent); outline-offset: 2px; }
+    .writing-lines { margin-top: 0; pointer-events: none; }
+    .writing-line { height: 0.6cm; border-bottom: 1px solid #707070; }
+    .writing-line + .writing-line { margin-top: 1px; }
+    .gap-positive { color: rgb(0, 255, 0) !important; font-weight: 800; }
+    .gap-negative { color: rgb(255, 0, 0) !important; font-weight: 800; }
+    .type-soft { color: rgb(0, 255, 0); font-weight: 800; }
+    .type-hard { color: rgb(255, 0, 0); font-weight: 800; }
+    .item-token { font-weight: 900; }
+    .item-token-tbb, .item-token-bbb, .item-token-bb { color: rgb(0, 0, 255); }
+    .item-token-sma3 { color: rgb(0, 255, 0); }
+    .item-token-sma13 { color: rgb(255, 255, 0); background: #111; padding: 0 1px; }
+    .item-token-sma21 { color: rgb(0, 0, 139); }
+    .item-token-sma34 { color: rgb(30, 144, 255); }
+    .item-token-sma55 { color: rgb(255, 165, 0); }
+    .item-token-sma89 { color: rgb(0, 139, 139); }
+    .item-token-sma144 { color: rgb(255, 255, 255); padding: 0 2px; text-shadow: -0.45px 0 #000, 0 0.45px #000, 0 -0.45px #000, 0.45px 0 #000; }
+    .item-token-sma233 { color: rgb(0, 0, 0); }
+    .item-token-sma377 { color: rgb(165, 42, 42); }
+    .item-token-sma610 { color: rgb(148, 0, 211); }
+    .item-token-sma987 { color: rgb(255, 0, 255); }
+    @media (max-width: 1360px) { .app { grid-template-columns: 1fr; } .paper-wrap { position: static; } }
+    @media (max-width: 1180px) { .app { padding: 12px; gap: 12px; } .panel { padding: 12px; } .paper-shell { padding: 8px; } .paper { width: 100%; min-height: auto; padding: 7mm; } }
+    @media (max-width: 980px) { .grid-3, .grid-4, .grid-5, .editor-grid-2, .summary-grid-2, .setup-grid, .indicator-grid, .indicator-report-grid { grid-template-columns: 1fr; } }
+    @media print {
+      @page { size: A4 portrait; margin: 7mm; }
+      html, body { background: #fff; }
+      .app { display: block; max-width: none; padding: 0; margin: 0; }
+      .panel:first-child, .paper-shell { border: none; box-shadow: none; padding: 0; background: transparent; }
+      .panel:first-child { display: none !important; }
+      .paper { width: auto; min-height: auto; box-shadow: none; margin: 0; padding: 0; }
+      .tf-report, .tf-chapter, .summary-block { break-inside: auto; page-break-inside: auto; }
+      .summary-grid-2, .indicator-report-grid { gap: 6px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <section class="panel">
+      <div class="section">
+        <div class="section-title">Titolo</div>
+        <div class="grid-5">
+          <div class="field"><label for="ticker">Ticker</label><input id="ticker" type="text" placeholder="SPX" /></div>
+          <div class="field"><label for="report-date">Data</label><input id="report-date" type="date" /></div>
+          <div class="field"><label for="direction">Direzione</label><select id="direction"></select></div>
+          <div class="field"><label for="report-mode">Modalità</label><select id="report-mode"></select></div>
+          <div class="field"><label for="global-close">Close comune</label><input id="global-close" type="number" step="0.01" placeholder="XXXX.XX" /></div>
+        </div>
+      </div>
+      <div class="section">
+        <div class="section-title">Configurazione</div>
+        <div class="field"><label for="config-file">Carica config.yaml</label><input id="config-file" type="file" accept=".yaml,.yml,.json,text/yaml,text/x-yaml,application/json" /></div>
+        <div class="toolbar">
+          <button class="btn" id="default-config-btn" type="button">Usa config predefinita</button>
+          <button class="btn" id="export-json-btn" type="button">Esporta selezione JSON</button>
+          <button class="btn btn-primary" id="print-btn" type="button">Stampa</button>
+          <button class="btn" id="reset-btn" type="button">Reset</button>
+        </div>
+        <div class="status-line" id="config-status"></div>
+      </div>
+      <div class="section">
+        <div class="section-title">Market SLI</div>
+        <div class="setup-grid">
+          <div class="editor-subpanel"><div id="market-sli-editor"></div></div>
+        </div>
+      </div>
+      <div class="section">
+        <div class="section-title">Setup Multi-TF</div>
+        <div class="setup-grid">
+          <div class="editor-subpanel"><h3 class="subpanel-title">21SMA</h3><div id="sma-editor"></div></div>
+          <div class="editor-subpanel"><h3 class="subpanel-title">Candele</h3><div id="candles-editor"></div></div>
+        </div>
+      </div>
+      <div class="section">
+        <div class="section-title">Indicatori / Spazio</div>
+        <div id="indicators-editor"></div>
+      </div>
+    </section>
+    <section class="paper-wrap">
+      <div class="paper-shell"><article class="paper" id="print-report"></article></div>
+    </section>
+  </div>
+  <script>
+    const defaultConfig = {
+  "timeframes": [
+    "M",
+    "8D",
+    "W",
+    "3D",
+    "D",
+    "233"
+  ],
+  "indicator_timeframes": [
+    "W",
+    "3D",
+    "D",
+    "233"
+  ],
+  "directions": [
+    "UP",
+    "DOWN"
+  ],
+  "sma21_states": [
+    "Piatta",
+    "Piatta con cambio direzione da salita.",
+    "Piatta con cambio direzione da discesa.",
+    "In salita.",
+    "In salita con cambio direzione da discesa.",
+    "In salita con cambio direzione da piatta.",
+    "In salita con rafforzamento.",
+    "In salita con indebolimento.",
+    "In discesa.",
+    "In discesa con rafforzamento.",
+    "In discesa con indebolimento.",
+    "In discesa con cambio direzione da salita.",
+    "In discesa con cambio direzione da piatta."
+  ],
+  "candlestick_patterns": [
+    "Doji",
+    "Doji Long Legged",
+    "Gravestone Doji",
+    "Dragonfly Doji",
+    "Spinning Top",
+    "Hanging Man",
+    "Shooting Star",
+    "Inverted Hammer",
+    "Hammer",
+    "Morning Star",
+    "Piercing Pattern",
+    "Tweezer Top",
+    "Bullish Engulfing Pattern",
+    "Evening Star",
+    "Dark cloud cover",
+    "Tweezer Bottom",
+    "Bearish Engulfing Pattern",
+    "Marubozu"
+  ],
+  "candlestick_attributes": [
+    "Bianca",
+    "Rossa",
+    "LUW",
+    "LLW"
+  ],
+  "christmas_cross_groups": [
+    {
+      "label": "Status",
+      "options": [
+        "Bullish",
+        "Bearish",
+        "Bullish HH",
+        "Bearish HH"
+      ]
+    },
+    {
+      "label": "Separation",
+      "options": [
+        "Bullish SEP",
+        "Bearish SEP",
+        "Bullish SEP + X",
+        "Bearish SEP + X"
+      ]
+    },
+    {
+      "label": "Windshield Effect",
+      "options": [
+        "Bullish WS",
+        "Bearish WS"
+      ]
+    },
+    {
+      "label": "Crossover",
+      "options": [
+        "Bullish X-over",
+        "Bearish X-over",
+        "Bullish X-JATC",
+        "Bearish X- ATC",
+        "Bullish X-CH",
+        "Bearish X-CH",
+        "Bullish X-HJC"
+      ]
+    },
+    {
+      "label": "SMA2",
+      "color": "red",
+      "options": [
+        "SMA2 piatta",
+        "SMA2 piatta con cambio direzione da salita.",
+        "SMA2 piatta con cambio direzione da discesa.",
+        "SMA2 in salita.",
+        "SMA2 in salita con cambio direzione da discesa.",
+        "SMA2 in salita con cambio direzione da piatta.",
+        "SMA2 in salita con rafforzamento.",
+        "SMA2 in salita con indebolimento.",
+        "SMA2 in discesa.",
+        "SMA2 in discesa con rafforzamento.",
+        "SMA2 in discesa con indebolimento.",
+        "SMA2 in discesa con cambio direzione da salita.",
+        "SMA2 in discesa con cambio direzione da piatta."
+      ]
+    },
+    {
+      "label": "SMA3",
+      "color": "lime",
+      "options": [
+        "SMA3 piatta",
+        "SMA3 piatta con cambio direzione da salita.",
+        "SMA3 piatta con cambio direzione da discesa.",
+        "SMA3 in salita.",
+        "SMA3 in salita con cambio direzione da discesa.",
+        "SMA3 in salita con cambio direzione da piatta.",
+        "SMA3 in salita con rafforzamento.",
+        "SMA3 in salita con indebolimento.",
+        "SMA3 in discesa.",
+        "SMA3 in discesa con rafforzamento.",
+        "SMA3 in discesa con indebolimento.",
+        "SMA3 in discesa con cambio direzione da salita.",
+        "SMA3 in discesa con cambio direzione da piatta."
+      ]
+    },
+    {
+      "label": "Distanza",
+      "options": [
+        "Convergenti",
+        "Divergenti",
+        "Parallele"
+      ]
+    }
+  ],
+  "stochastic_rsi_groups": [
+    {
+      "label": "Status",
+      "options": [
+        "Bullish",
+        "Bearish",
+        "Bullish HH",
+        "Bearish HH"
+      ]
+    },
+    {
+      "label": "Separation",
+      "options": [
+        "Bullish SEP",
+        "Bearish SEP",
+        "Bullish SEP + X",
+        "Bearish SEP + X"
+      ]
+    },
+    {
+      "label": "Windshield Effect",
+      "options": [
+        "Bullish WS",
+        "Bearish WS"
+      ]
+    },
+    {
+      "label": "Crossover",
+      "options": [
+        "Bullish X-over",
+        "Bearish X-over",
+        "Bullish X-JATC",
+        "Bearish X- ATC",
+        "Bullish X-CH",
+        "Bearish X-CH",
+        "Bullish X-HJC"
+      ]
+    },
+    {
+      "label": "K",
+      "color": "red",
+      "options": [
+        "K piatta",
+        "K piatta con cambio direzione da salita.",
+        "K piatta con cambio direzione da discesa.",
+        "K in salita.",
+        "K in salita con cambio direzione da discesa.",
+        "K in salita con cambio direzione da piatta.",
+        "K in salita con rafforzamento.",
+        "K in salita con indebolimento.",
+        "K in discesa.",
+        "K in discesa con rafforzamento.",
+        "K in discesa con indebolimento",
+        "K in discesa con cambio direzione da salita.",
+        "K in discesa con cambio direzione da piatta."
+      ]
+    },
+    {
+      "label": "D",
+      "color": "lime",
+      "options": [
+        "D piatta",
+        "D piatta con cambio direzione da salita.",
+        "D piatta con cambio direzione da discesa.",
+        "D in salita.",
+        "D in salita con cambio direzione da discesa.",
+        "D in salita con cambio direzione da piatta.",
+        "D in salita con rafforzamento.",
+        "D in salita con indebolimento.",
+        "D in discesa.",
+        "D in discesa con rafforzamento.",
+        "D in discesa con indebolimento",
+        "D in discesa con cambio direzione da salita.",
+        "D in discesa con cambio direzione da piatta."
+      ]
+    },
+    {
+      "label": "Distanza",
+      "options": [
+        "Convergenti",
+        "Divergenti",
+        "Parallele"
+      ]
+    },
+    {
+      "label": "Livelli",
+      "options": [
+        "Sotto 20",
+        "Tra 20 e 50",
+        "Tra 50 e 80",
+        "Sopra 80",
+        "K sopra 80",
+        "K tra 50 e 80",
+        "K tra 20 e 50",
+        "K sotto 20",
+        "D sopra 80",
+        "D tra 50 e 80",
+        "D tra 20 e 50",
+        "D sotto 20",
+        "K ha raggiunto 100",
+        "K ha raggiunto 0",
+        "K ha lasciato 100",
+        "K ha lasciato 0",
+        "K piatto a 100",
+        "K piatto a 0",
+        "D ha raggiunto 100",
+        "D ha raggiunto 0",
+        "D ha lasciato 100",
+        "D ha lasciato 0",
+        "D piatto a 100",
+        "D piatto a 0"
+      ]
+    }
+  ],
+  "macd_groups": [
+    {
+      "label": "Status",
+      "options": [
+        "Bullish",
+        "Bearish",
+        "Bullish HH",
+        "Bearish HH"
+      ]
+    },
+    {
+      "label": "Separation",
+      "options": [
+        "Bullish SEP",
+        "Bearish SEP",
+        "Bullish SEP + X",
+        "Bearish SEP + X"
+      ]
+    },
+    {
+      "label": "Windshield Effect",
+      "options": [
+        "Bullish WS",
+        "Bearish WS"
+      ]
+    },
+    {
+      "label": "Crossover",
+      "options": [
+        "Bullish X-over",
+        "Bearish X-over",
+        "Bullish X-JATC",
+        "Bearish X- ATC",
+        "Bullish X-CH",
+        "Bearish X-CH",
+        "Bullish X-HJC"
+      ]
+    },
+    {
+      "label": "MACD",
+      "color": "red",
+      "options": [
+        "MACD piatta",
+        "MACD piatta con cambio direzione da salita.",
+        "MACD piatta con cambio direzione da discesa.",
+        "MACD in salita.",
+        "MACD in salita con cambio direzione da discesa.",
+        "MACD in salita con cambio direzione da piatta.",
+        "MACD in salita con rafforzamento.",
+        "MACD in salita con indebolimento.",
+        "MACD in discesa.",
+        "MACD in discesa con rafforzamento.",
+        "MACD in discesa con indebolimento.",
+        "MACD in discesa con cambio direzione da salita.",
+        "MACD in discesa con cambio direzione da piatta."
+      ]
+    },
+    {
+      "label": "Signal",
+      "color": "lime",
+      "options": [
+        "Signal piatta",
+        "Signal piatta con cambio direzione da salita.",
+        "Signal piatta con cambio direzione da discesa.",
+        "Signal in salita.",
+        "Signal in salita con cambio direzione da discesa.",
+        "Signal in salita con cambio direzione da piatta.",
+        "Signal in salita con rafforzamento.",
+        "Signal in salita con indebolimento.",
+        "Signal in discesa.",
+        "Signal in discesa con rafforzamento.",
+        "Signal in discesa con indebolimento.",
+        "Signal in discesa con cambio direzione da salita.",
+        "Signal in discesa con cambio direzione da piatta."
+      ]
+    },
+    {
+      "label": "Distanza",
+      "options": [
+        "Convergenti",
+        "Divergenti",
+        "Parallele"
+      ]
+    },
+    {
+      "label": "Histo",
+      "options": [
+        "Histo positivo",
+        "Histo negativo",
+        "Histo a zero",
+        "Histo in salita",
+        "Histo in discesa",
+        "Histo piatto",
+        "Histo positivo – Reversal da discesa",
+        "Histo positivo – Reversal da salita.",
+        "Histo negativo – Reversal da discesa.",
+        "Histo negativo – Reversal da salita."
+      ]
+    },
+    {
+      "label": "Histo Livelli",
+      "options": [
+        "Histo a UYL",
+        "Histo a UPL",
+        "Histo a UOL",
+        "Histo a LOL",
+        "Histo a LPL",
+        "Histo a LYL",
+        "Histo sopra UYL",
+        "Histo sotto LYL",
+        "Histo tra zero e UOL",
+        "Histo tra UOL e UPL",
+        "Histo tra UPL e UYL",
+        "Histo tra zero e LOL",
+        "Histo tra LOL e LPL",
+        "Histo tra LPL e LYL"
+      ]
+    }
+  ],
+  "dm_adx_groups": [
+    {
+      "label": "Status",
+      "options": [
+        "Bullish",
+        "Bearish",
+        "Bullish HH",
+        "Bearish HH"
+      ]
+    },
+    {
+      "label": "Separation",
+      "options": [
+        "Bullish SEP",
+        "Bearish SEP",
+        "Bullish SEP + X",
+        "Bearish SEP + X"
+      ]
+    },
+    {
+      "label": "Windshield Effect",
+      "options": [
+        "Bullish WS",
+        "Bearish WS"
+      ]
+    },
+    {
+      "label": "Crossover",
+      "options": [
+        "Bullish X-over",
+        "Bearish X-over",
+        "Bullish X-JATC",
+        "Bearish X- ATC",
+        "Bullish X-CH",
+        "Bearish X-CH",
+        "Bullish X-HJC"
+      ]
+    },
+    {
+      "label": "PDI",
+      "color": "red",
+      "options": [
+        "PDI piatta",
+        "PDI piatta con cambio direzione da salita.",
+        "PDI piatta con cambio direzione da discesa.",
+        "PDI in salita.",
+        "PDI in salita con cambio direzione da discesa.",
+        "PDI in salita con cambio direzione da piatta.",
+        "PDI in salita con rafforzamento.",
+        "PDI in salita con indebolimento.",
+        "PDI in discesa.",
+        "PDI in discesa con rafforzamento.",
+        "PDI in discesa con indebolimento.",
+        "PDI in discesa con cambio direzione da salita.",
+        "PDI in discesa con cambio direzione da piatta."
+      ]
+    },
+    {
+      "label": "MDI",
+      "color": "lime",
+      "options": [
+        "MDI piatta",
+        "MDI piatta con cambio direzione da salita.",
+        "MDI piatta con cambio direzione da discesa.",
+        "MDI in salita.",
+        "MDI in salita con cambio direzione da discesa.",
+        "MDI in salita con cambio direzione da piatta.",
+        "MDI in salita con rafforzamento.",
+        "MDI in salita con indebolimento.",
+        "MDI in discesa.",
+        "MDI in discesa con rafforzamento.",
+        "MDI in discesa con indebolimento.",
+        "MDI in discesa con cambio direzione da salita.",
+        "MDI in discesa con cambio direzione da piatta."
+      ]
+    },
+    {
+      "label": "Distanza",
+      "options": [
+        "Convergenti",
+        "Divergenti",
+        "Parallele"
+      ]
+    },
+    {
+      "label": "LPL",
+      "color": "violet",
+      "options": [
+        "PDI TF",
+        "PDI +TF",
+        "PDI CTF",
+        "MDI TF",
+        "MDI +TF",
+        "MDI CTF"
+      ]
+    },
+    {
+      "label": "ADX",
+      "color": "yellow",
+      "options": [
+        "ADX piatta",
+        "ADX piatta con cambio direzione da salita.",
+        "ADX piatta con cambio direzione da discesa.",
+        "ADX in salita.",
+        "ADX in salita con cambio direzione da discesa.",
+        "ADX in salita con cambio direzione da piatta.",
+        "ADX in salita con rafforzamento.",
+        "ADX in salita con indebolimento.",
+        "ADX in discesa.",
+        "ADX in discesa con rafforzamento.",
+        "ADX in discesa con indebolimento.",
+        "ADX in discesa con cambio direzione da salita.",
+        "ADX in discesa con cambio direzione da piatta."
+      ]
+    }
+  ],
+  "space_items": [
+    "TBB",
+    "BBB",
+    "SMA3",
+    "SMA13",
+    "SMA21",
+    "SMA34",
+    "SMA55",
+    "SMA89",
+    "SMA144",
+    "SMA233",
+    "SMA377",
+    "SMA610",
+    "SMA987"
+  ],
+  "space_directions": [
+    "In salita",
+    "In discesa",
+    "Piatta"
+  ],
+  "space_types": [
+    "Soft",
+    "Hard"
+  ]
+};
+    const indicatorDefs = [
+      { key: 'christmasCross', label: 'Christmas Cross', configKey: 'christmas_cross_groups' },
+      { key: 'stochasticRsi', label: 'Stochastic RSI', configKey: 'stochastic_rsi_groups' },
+      { key: 'macd', label: 'MACD', configKey: 'macd_groups' },
+      { key: 'dmAdx', label: 'DM + ADX', configKey: 'dm_adx_groups' }
+    ];
+    let config = deepCopy(defaultConfig);
+    const reportModes = ['Backwork', 'Live'];
+    const candleStates = ['Aperta', 'Chiusa'];
+    const candleOpenDayTimeframes = new Set(['M', '8D', 'W', '3D']);
+    const marketSliIndices = ['SP500', 'COMPQ', 'INDU', 'RUT', 'SPXEW', 'VIX', 'VVIX'];
+    const marketSliChoices = ['SI', 'NO'];
+    const state = { title: { ticker: 'SPX', date: '', direction: 'UP', mode: 'Backwork' }, commonClose: '', marketSli: {}, sma21: {}, candles: {}, indicators: {}, space: {} };
+    const tickerInput = document.getElementById('ticker');
+    const dateInput = document.getElementById('report-date');
+    const directionSelect = document.getElementById('direction');
+    const reportModeSelect = document.getElementById('report-mode');
+    const globalCloseInput = document.getElementById('global-close');
+    const marketSliEditor = document.getElementById('market-sli-editor');
+    const smaEditor = document.getElementById('sma-editor');
+    const candlesEditor = document.getElementById('candles-editor');
+    const indicatorsEditor = document.getElementById('indicators-editor');
+    const printReport = document.getElementById('print-report');
+    const configStatus = document.getElementById('config-status');
+    const configFileInput = document.getElementById('config-file');
+
+    function deepCopy(obj) { return JSON.parse(JSON.stringify(obj)); }
+    function stripYamlValue(value) {
+      const trimmed = String(value ?? '').trim();
+      if ((trimmed.startsWith('"') && trimmed.endsWith('"')) || (trimmed.startsWith("'") && trimmed.endsWith("'"))) {
+        return trimmed.slice(1, -1).replace(/\\"/g, '"');
+      }
+      return trimmed;
+    }
+    function leadingSpaces(value) { return (value.match(/^\s*/) || [''])[0].length; }
+    function parseConfigText(text) {
+      const trimmed = text.trim();
+      if (!trimmed) throw new Error('File vuoto.');
+      if (trimmed.startsWith('{')) return JSON.parse(trimmed);
+      return parseLimitedYaml(trimmed);
+    }
+    function parseLimitedYaml(text) {
+      const lines = text.replace(/\t/g, '  ').split(/\r?\n/);
+      const result = {};
+      const keyOnly = /^([A-Za-z0-9_]+):\s*$/;
+      const keyValue = /^([A-Za-z0-9_]+):\s*(.+?)\s*$/;
+      let i = 0;
+      while (i < lines.length) {
+        let raw = lines[i];
+        let trimmed = raw.trim();
+        if (!trimmed || trimmed.startsWith('#')) { i += 1; continue; }
+        const topMatch = trimmed.match(keyOnly);
+        if (!topMatch) throw new Error(`Riga YAML non valida: ${trimmed}`);
+        const topKey = topMatch[1];
+        const items = [];
+        i += 1;
+        while (i < lines.length) {
+          raw = lines[i];
+          trimmed = raw.trim();
+          if (!trimmed || trimmed.startsWith('#')) { i += 1; continue; }
+          if (!trimmed.startsWith('- ')) {
+            if (leadingSpaces(raw) === 0 && keyOnly.test(trimmed)) break;
+            throw new Error(`Atteso elemento lista sotto ${topKey}: ${trimmed}`);
+          }
+          if (leadingSpaces(raw) !== 0) throw new Error(`Indentazione non valida sotto ${topKey}: ${trimmed}`);
+          const payload = trimmed.slice(2).trim();
+          if (!payload.includes(':')) {
+            items.push(stripYamlValue(payload));
+            i += 1;
+            continue;
+          }
+          const pair = payload.match(keyValue);
+          if (!pair) throw new Error(`Oggetto YAML non valido: ${trimmed}`);
+          const obj = { [pair[1]]: stripYamlValue(pair[2]) };
+          i += 1;
+          while (i < lines.length) {
+            raw = lines[i];
+            trimmed = raw.trim();
+            if (!trimmed || trimmed.startsWith('#')) { i += 1; continue; }
+            const nestedIndent = leadingSpaces(raw);
+            if (nestedIndent === 0) break;
+            const nestedKeyOnly = trimmed.match(keyOnly);
+            const nestedPair = trimmed.match(keyValue);
+            if (nestedIndent === 2 && nestedPair) {
+              obj[nestedPair[1]] = stripYamlValue(nestedPair[2]);
+              i += 1;
+              continue;
+            }
+            if (nestedIndent === 2 && nestedKeyOnly) {
+              const nestedKey = nestedKeyOnly[1];
+              obj[nestedKey] = [];
+              i += 1;
+              while (i < lines.length) {
+                raw = lines[i];
+                trimmed = raw.trim();
+                if (!trimmed || trimmed.startsWith('#')) { i += 1; continue; }
+                const arrIndent = leadingSpaces(raw);
+                if (arrIndent < 2) break;
+                if (arrIndent !== 2 || !trimmed.startsWith('- ')) throw new Error(`Atteso elemento lista in ${nestedKey}: ${trimmed}`);
+                obj[nestedKey].push(stripYamlValue(trimmed.slice(2)));
+                i += 1;
+              }
+              continue;
+            }
+            throw new Error(`Struttura YAML non supportata: ${trimmed}`);
+          }
+          items.push(obj);
+        }
+        result[topKey] = items;
+      }
+      return result;
+    }
+    function isGroupArray(value) {
+      return Array.isArray(value) && value.length > 0 && value.every(group => group && typeof group === 'object' && typeof group.label === 'string' && Array.isArray(group.options));
+    }
+    function isValidConfig(candidate) {
+      const flatRequired = ['timeframes','indicator_timeframes','directions','sma21_states','candlestick_patterns','candlestick_attributes','space_items','space_directions','space_types'];
+      const groupedRequired = ['christmas_cross_groups','stochastic_rsi_groups','macd_groups','dm_adx_groups'];
+      return flatRequired.every(key => Array.isArray(candidate[key]) && candidate[key].length > 0)
+        && groupedRequired.every(key => isGroupArray(candidate[key]));
+    }
+    function getIndicatorGroups(def) { return Array.isArray(config[def.configKey]) ? config[def.configKey] : []; }
+    function getIndicatorOptions(def) { return getIndicatorGroups(def).flatMap(group => Array.isArray(group.options) ? group.options : []); }
+    function getOrderedSelected(tf, def) {
+      const selected = new Set(Array.isArray(state.indicators?.[tf]?.[def.key]) ? state.indicators[tf][def.key] : []);
+      return getIndicatorOptions(def).filter(option => selected.has(option));
+    }
+    function parseNumber(value) {
+      if (value === null || value === undefined || value === '') return null;
+      const normalized = String(value).replace(',', '.').replace(/\$/g, '').trim();
+      const num = Number.parseFloat(normalized);
+      return Number.isFinite(num) ? num : null;
+    }
+    function formatMoney(value) {
+      const num = parseNumber(value);
+      return num === null ? '—' : `${num.toFixed(2)}$`;
+    }
+    function formatSignedMoney(value) {
+      const num = parseNumber(value);
+      if (num === null) return '—';
+      const sign = num > 0 ? '+' : '';
+      return `${sign}${num.toFixed(2)}$`;
+    }
+    function calculateGap(closeValue, levelValue) {
+      const closeNum = parseNumber(closeValue);
+      const levelNum = parseNumber(levelValue);
+      if (closeNum === null || levelNum === null) return null;
+      return levelNum - closeNum;
+    }
+    function gapClass(value) {
+      if (value === null) return '';
+      if (value < 0) return 'gap-negative';
+      if (value > 0) return 'gap-positive';
+      return '';
+    }
+    function sanitizeCssToken(value) {
+      return String(value).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+    }
+    function renderSpaceItemToken(item) {
+      const safeLabel = escapeHtml(item);
+      return `<span class="item-token item-token-${sanitizeCssToken(item)}">${safeLabel}</span>`;
+    }
+    function renderTypeToken(type) {
+      if (!type) return '<span class="dash">—</span>';
+      const cls = type === 'Hard' ? 'type-hard' : type === 'Soft' ? 'type-soft' : '';
+      return cls ? `<span class="${cls}">${escapeHtml(type)}</span>` : escapeHtml(type);
+    }
+    function getSpaceEntry(tf, item) {
+      return state.space?.[tf]?.items?.[item] || { selected: false, level: '', direction: '', type: '' };
+    }
+    function normalizeState() {
+      if (typeof state.commonClose !== 'string' && typeof state.commonClose !== 'number') state.commonClose = '';
+      if (!state.marketSli || typeof state.marketSli !== 'object') state.marketSli = {};
+      marketSliIndices.forEach(index => {
+        if (!marketSliChoices.includes(state.marketSli[index])) state.marketSli[index] = '';
+      });
+      Object.keys(state.marketSli).forEach(index => { if (!marketSliIndices.includes(index)) delete state.marketSli[index]; });
+      for (const tf of config.timeframes) {
+        if (!(tf in state.sma21)) state.sma21[tf] = '';
+        if (!(tf in state.candles)) state.candles[tf] = { pattern: '', attributes: [], status: '', daysOpen: '' };
+        if (!config.candlestick_patterns.includes(state.candles[tf].pattern)) {
+          state.candles[tf].pattern = '';
+          state.candles[tf].attributes = [];
+          state.candles[tf].status = '';
+          state.candles[tf].daysOpen = '';
+        }
+        state.candles[tf].attributes = (state.candles[tf].attributes || []).filter(attr => config.candlestick_attributes.includes(attr));
+        if (!candleStates.includes(state.candles[tf].status)) state.candles[tf].status = '';
+        const normalizedDays = Number.parseInt(state.candles[tf].daysOpen, 10);
+        state.candles[tf].daysOpen = candleOpenDayTimeframes.has(tf) && Number.isInteger(normalizedDays) && normalizedDays >= 1 && normalizedDays <= 31
+          ? String(normalizedDays)
+          : '';
+        if (state.candles[tf].status !== 'Aperta') state.candles[tf].daysOpen = '';
+      }
+      for (const tf of config.indicator_timeframes) {
+        if (!(tf in state.indicators)) state.indicators[tf] = {};
+        if (!(tf in state.space)) state.space[tf] = { items: {} };
+        indicatorDefs.forEach(def => {
+          const allowed = new Set(getIndicatorOptions(def));
+          const current = Array.isArray(state.indicators[tf][def.key]) ? state.indicators[tf][def.key] : [];
+          state.indicators[tf][def.key] = getIndicatorOptions(def).filter(item => allowed.has(item) && current.includes(item));
+        });
+        const cleanItems = {};
+        config.space_items.forEach(item => {
+          const current = state.space[tf].items?.[item] || {};
+          cleanItems[item] = {
+            selected: Boolean(current.selected),
+            level: current.level ?? '',
+            direction: config.space_directions.includes(current.direction) ? current.direction : '',
+            type: config.space_types.includes(current.type) ? current.type : ''
+          };
+        });
+        state.space[tf].items = cleanItems;
+      }
+      Object.keys(state.sma21).forEach(tf => { if (!config.timeframes.includes(tf)) delete state.sma21[tf]; });
+      Object.keys(state.candles).forEach(tf => { if (!config.timeframes.includes(tf)) delete state.candles[tf]; });
+      Object.keys(state.indicators).forEach(tf => { if (!config.indicator_timeframes.includes(tf)) delete state.indicators[tf]; });
+      Object.keys(state.space).forEach(tf => { if (!config.indicator_timeframes.includes(tf)) delete state.space[tf]; });
+      if (!config.directions.includes(state.title.direction)) state.title.direction = config.directions[0] || 'UP';
+      if (!reportModes.includes(state.title.mode)) state.title.mode = reportModes[0];
+    }
+    function formatDate(dateValue) {
+      if (!dateValue) return '--/--/----';
+      const [yyyy, mm, dd] = dateValue.split('-');
+      return `${dd}/${mm}/${yyyy}`;
+    }
+    function composeTitle() {
+      const ticker = (state.title.ticker || 'TICKER').trim().toUpperCase();
+      const mode = state.title.mode || reportModes[0];
+      return `${ticker} ${formatDate(state.title.date)} ${state.title.direction || 'UP'} ${mode}`;
+    }
+    function escapeHtml(value) {
+      return String(value).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'",'&#039;');
+    }
+    function populateDirectionOptions() {
+      directionSelect.innerHTML = '';
+      config.directions.forEach(dir => {
+        const option = document.createElement('option');
+        option.value = dir;
+        option.textContent = dir;
+        if (dir === state.title.direction) option.selected = true;
+        directionSelect.appendChild(option);
+      });
+    }
+    function populateReportModeOptions() {
+      reportModeSelect.innerHTML = '';
+      reportModes.forEach(mode => {
+        const option = document.createElement('option');
+        option.value = mode;
+        option.textContent = mode;
+        if (mode === state.title.mode) option.selected = true;
+        reportModeSelect.appendChild(option);
+      });
+    }
+    function buildMarketSliEditor() {
+      const table = document.createElement('table');
+      table.className = 'editor-table';
+      table.innerHTML = `<thead><tr><th style="width:180px;">Indice</th><th style="width:120px;">Selezione</th></tr></thead><tbody></tbody>`;
+      const tbody = table.querySelector('tbody');
+      marketSliIndices.forEach(index => {
+        const tr = document.createElement('tr');
+        const indexCell = document.createElement('td');
+        indexCell.textContent = index;
+        const valueCell = document.createElement('td');
+        const select = document.createElement('select');
+        const empty = document.createElement('option');
+        empty.value = '';
+        empty.textContent = '—';
+        select.appendChild(empty);
+        marketSliChoices.forEach(value => {
+          const opt = document.createElement('option');
+          opt.value = value;
+          opt.textContent = value;
+          opt.selected = state.marketSli[index] === value;
+          select.appendChild(opt);
+        });
+        select.addEventListener('change', () => { state.marketSli[index] = select.value; renderPreview(); });
+        valueCell.appendChild(select);
+        tr.appendChild(indexCell);
+        tr.appendChild(valueCell);
+        tbody.appendChild(tr);
+      });
+      marketSliEditor.innerHTML = '';
+      marketSliEditor.appendChild(table);
+    }
+    function buildSmaEditor() {
+      const table = document.createElement('table');
+      table.className = 'editor-table candles-table';
+      table.innerHTML = `<thead><tr><th style="width:62px;">TF</th><th>Stato</th></tr></thead><tbody></tbody>`;
+      const tbody = table.querySelector('tbody');
+      config.timeframes.forEach(tf => {
+        const tr = document.createElement('tr');
+        const tfCell = document.createElement('td');
+        tfCell.className = 'tf-cell';
+        tfCell.textContent = tf;
+        const stateCell = document.createElement('td');
+        const select = document.createElement('select');
+        const empty = document.createElement('option');
+        empty.value = '';
+        empty.textContent = '—';
+        select.appendChild(empty);
+        config.sma21_states.forEach(value => {
+          const opt = document.createElement('option');
+          opt.value = value;
+          opt.textContent = value;
+          opt.selected = state.sma21[tf] === value;
+          select.appendChild(opt);
+        });
+        select.addEventListener('change', () => { state.sma21[tf] = select.value; renderPreview(); });
+        stateCell.appendChild(select);
+        tr.appendChild(tfCell);
+        tr.appendChild(stateCell);
+        tbody.appendChild(tr);
+      });
+      smaEditor.innerHTML = '';
+      smaEditor.appendChild(table);
+    }
+    function buildCandlesEditor() {
+      const table = document.createElement('table');
+      table.className = 'editor-table';
+      table.innerHTML = `<thead><tr><th style="width:62px;">TF</th><th style="width:28%;">Pattern</th><th>Caratteristiche</th><th style="width:140px;">Stato</th><th style="width:120px;">Giorni</th></tr></thead><tbody></tbody>`;
+      const tbody = table.querySelector('tbody');
+      config.timeframes.forEach(tf => {
+        const tr = document.createElement('tr');
+        const tfCell = document.createElement('td');
+        tfCell.className = 'tf-cell';
+        tfCell.textContent = tf;
+
+        const patternCell = document.createElement('td');
+        const patternSelect = document.createElement('select');
+        const empty = document.createElement('option');
+        empty.value = '';
+        empty.textContent = '—';
+        patternSelect.appendChild(empty);
+        config.candlestick_patterns.forEach(pattern => {
+          const opt = document.createElement('option');
+          opt.value = pattern;
+          opt.textContent = pattern;
+          opt.selected = state.candles[tf].pattern === pattern;
+          patternSelect.appendChild(opt);
+        });
+
+        const attrCell = document.createElement('td');
+        const attrWrap = document.createElement('div');
+        attrWrap.className = 'attr-wrap';
+        const checkboxes = [];
+        config.candlestick_attributes.forEach(attr => {
+          const label = document.createElement('label');
+          label.className = 'check';
+          const input = document.createElement('input');
+          input.type = 'checkbox';
+          input.checked = state.candles[tf].attributes.includes(attr);
+          input.addEventListener('change', () => {
+            const selected = new Set(state.candles[tf].attributes);
+            if (input.checked) selected.add(attr); else selected.delete(attr);
+            state.candles[tf].attributes = config.candlestick_attributes.filter(item => selected.has(item));
+            renderPreview();
+          });
+          checkboxes.push(input);
+          label.appendChild(input);
+          label.appendChild(document.createTextNode(attr));
+          attrWrap.appendChild(label);
+        });
+
+        const statusCell = document.createElement('td');
+        const statusSelect = document.createElement('select');
+        const statusEmpty = document.createElement('option');
+        statusEmpty.value = '';
+        statusEmpty.textContent = '—';
+        statusSelect.appendChild(statusEmpty);
+        candleStates.forEach(value => {
+          const opt = document.createElement('option');
+          opt.value = value;
+          opt.textContent = value;
+          opt.selected = state.candles[tf].status === value;
+          statusSelect.appendChild(opt);
+        });
+        statusCell.appendChild(statusSelect);
+
+        const daysCell = document.createElement('td');
+        const daysSelect = document.createElement('select');
+        const daysEmpty = document.createElement('option');
+        daysEmpty.value = '';
+        daysEmpty.textContent = '—';
+        daysSelect.appendChild(daysEmpty);
+        for (let day = 1; day <= 31; day += 1) {
+          const opt = document.createElement('option');
+          opt.value = String(day);
+          opt.textContent = String(day);
+          opt.selected = state.candles[tf].daysOpen === String(day);
+          daysSelect.appendChild(opt);
+        }
+        daysCell.appendChild(daysSelect);
+
+        function syncDisabled() {
+          const hasPattern = Boolean(patternSelect.value);
+          const canUseDays = hasPattern && statusSelect.value === 'Aperta' && candleOpenDayTimeframes.has(tf);
+          checkboxes.forEach(cb => cb.disabled = !hasPattern);
+          statusSelect.disabled = !hasPattern;
+          daysSelect.disabled = !canUseDays;
+          if (!hasPattern) {
+            state.candles[tf].attributes = [];
+            state.candles[tf].status = '';
+            state.candles[tf].daysOpen = '';
+            checkboxes.forEach(cb => { cb.checked = false; });
+            statusSelect.value = '';
+            daysSelect.value = '';
+          }
+          if (statusSelect.value !== 'Aperta') {
+            state.candles[tf].daysOpen = '';
+            daysSelect.value = '';
+          }
+          if (!candleOpenDayTimeframes.has(tf)) {
+            state.candles[tf].daysOpen = '';
+            daysSelect.value = '';
+          }
+        }
+
+        patternSelect.addEventListener('change', () => {
+          state.candles[tf].pattern = patternSelect.value;
+          syncDisabled();
+          renderPreview();
+        });
+        statusSelect.addEventListener('change', () => {
+          state.candles[tf].status = statusSelect.value;
+          syncDisabled();
+          renderPreview();
+        });
+        daysSelect.addEventListener('change', () => {
+          state.candles[tf].daysOpen = daysSelect.value;
+          renderPreview();
+        });
+        syncDisabled();
+
+        patternCell.appendChild(patternSelect);
+        attrCell.appendChild(attrWrap);
+        tr.appendChild(tfCell);
+        tr.appendChild(patternCell);
+        tr.appendChild(attrCell);
+        tr.appendChild(statusCell);
+        tr.appendChild(daysCell);
+        tbody.appendChild(tr);
+      });
+      const scrollWrap = document.createElement('div');
+      scrollWrap.className = 'table-scroll';
+      scrollWrap.appendChild(table);
+      candlesEditor.innerHTML = '';
+      candlesEditor.appendChild(scrollWrap);
+    }
+    function renderIndicatorOptions(tf, def, chipsWrap, countNode) {
+      chipsWrap.innerHTML = '';
+      const selected = getOrderedSelected(tf, def);
+      if (!selected.length) {
+        const empty = document.createElement('span');
+        empty.className = 'chip';
+        empty.textContent = 'Nessuna selezione';
+        chipsWrap.appendChild(empty);
+      } else {
+        selected.forEach(value => {
+          const chip = document.createElement('span');
+          chip.className = 'chip';
+          chip.textContent = value;
+          chipsWrap.appendChild(chip);
+        });
+      }
+      countNode.textContent = `${selected.length} selezionate`;
+    }
+    function buildSpaceEditorSection(tf) {
+      const wrap = document.createElement('div');
+      wrap.className = 'card-section';
+      wrap.innerHTML = `<h4 class="card-section-title">Spazio</h4>`;
+      const note = document.createElement('div');
+      note.className = 'space-note';
+      note.textContent = 'Gap = Livello - Close comune. In stampa gli item selezionati verranno aggregati e ordinati dalla distanza minore alla maggiore rispetto alla close comune.';
+      wrap.appendChild(note);
+
+      const table = document.createElement('table');
+      table.className = 'space-table';
+      table.innerHTML = `<thead><tr><th>Use</th><th>Item</th><th>Livello</th><th>Gap</th><th>Direzione</th><th>Tipo</th></tr></thead><tbody></tbody>`;
+      const tbody = table.querySelector('tbody');
+      const rowUpdaters = [];
+      function refreshGaps() { rowUpdaters.forEach(fn => fn()); renderPreview(); }
+      config.space_items.forEach(item => {
+        const entry = getSpaceEntry(tf, item);
+        const tr = document.createElement('tr');
+        const useCell = document.createElement('td');
+        useCell.style.textAlign = 'center';
+        const useInput = document.createElement('input');
+        useInput.type = 'checkbox';
+        useInput.checked = entry.selected;
+        useCell.appendChild(useInput);
+
+        const itemCell = document.createElement('td');
+        itemCell.textContent = item;
+
+        const levelCell = document.createElement('td');
+        const levelInput = document.createElement('input');
+        levelInput.type = 'number';
+        levelInput.step = '0.01';
+        levelInput.placeholder = 'XXXX.XX';
+        levelInput.value = entry.level;
+        levelCell.appendChild(levelInput);
+
+        const gapCell = document.createElement('td');
+        gapCell.className = 'space-gap';
+
+        const dirCell = document.createElement('td');
+        const dirSelect = document.createElement('select');
+        const dirEmpty = document.createElement('option');
+        dirEmpty.value = '';
+        dirEmpty.textContent = '—';
+        dirSelect.appendChild(dirEmpty);
+        config.space_directions.forEach(value => {
+          const opt = document.createElement('option');
+          opt.value = value;
+          opt.textContent = value;
+          opt.selected = entry.direction === value;
+          dirSelect.appendChild(opt);
+        });
+        dirCell.appendChild(dirSelect);
+
+        const typeCell = document.createElement('td');
+        const typeSelect = document.createElement('select');
+        const typeEmpty = document.createElement('option');
+        typeEmpty.value = '';
+        typeEmpty.textContent = '—';
+        typeSelect.appendChild(typeEmpty);
+        config.space_types.forEach(value => {
+          const opt = document.createElement('option');
+          opt.value = value;
+          opt.textContent = value;
+          opt.selected = entry.type === value;
+          typeSelect.appendChild(opt);
+        });
+        typeCell.appendChild(typeSelect);
+
+        function syncRow() {
+          const enabled = useInput.checked;
+          tr.classList.toggle('space-row-off', !enabled);
+          levelInput.disabled = !enabled;
+          dirSelect.disabled = !enabled;
+          typeSelect.disabled = !enabled;
+          const gap = enabled ? calculateGap(state.commonClose, levelInput.value) : null;
+          gapCell.innerHTML = gap === null ? '—' : `<span class="${gapClass(gap)}">${formatSignedMoney(gap)}</span>`;
+          state.space[tf].items[item] = {
+            selected: enabled,
+            level: levelInput.value,
+            direction: dirSelect.value,
+            type: typeSelect.value
+          };
+        }
+        rowUpdaters.push(syncRow);
+        useInput.addEventListener('change', () => { syncRow(); renderPreview(); });
+        levelInput.addEventListener('input', () => { syncRow(); renderPreview(); });
+        dirSelect.addEventListener('change', () => { syncRow(); renderPreview(); });
+        typeSelect.addEventListener('change', () => { syncRow(); renderPreview(); });
+        syncRow();
+
+        tr.appendChild(useCell);
+        tr.appendChild(itemCell);
+        tr.appendChild(levelCell);
+        tr.appendChild(gapCell);
+        tr.appendChild(dirCell);
+        tr.appendChild(typeCell);
+        tbody.appendChild(tr);
+      });
+      const scrollWrap = document.createElement('div');
+      scrollWrap.className = 'table-scroll';
+      scrollWrap.appendChild(table);
+      wrap.refreshGaps = refreshGaps;
+      wrap.appendChild(scrollWrap);
+      return wrap;
+    }
+    function buildIndicatorsEditor() {
+      indicatorsEditor.innerHTML = '';
+      config.indicator_timeframes.forEach(tf => {
+        const card = document.createElement('div');
+        card.className = 'indicator-card';
+        const header = document.createElement('div');
+        header.className = 'indicator-card-header';
+        header.innerHTML = `<div class="indicator-card-title">${escapeHtml(tf)}</div>`;
+        card.appendChild(header);
+
+        const indicatorsSection = document.createElement('div');
+        indicatorsSection.className = 'card-section';
+        indicatorsSection.innerHTML = `<h4 class="card-section-title">Indicatori</h4>`;
+        const grid = document.createElement('div');
+        grid.className = 'indicator-grid';
+
+        indicatorDefs.forEach(def => {
+          const box = document.createElement('div');
+          box.className = 'indicator-box';
+          const boxHeader = document.createElement('div');
+          boxHeader.className = 'indicator-box-header';
+          const name = document.createElement('div');
+          name.className = 'indicator-name';
+          name.textContent = def.label;
+          const rightWrap = document.createElement('div');
+          rightWrap.style.display = 'flex';
+          rightWrap.style.alignItems = 'center';
+          rightWrap.style.gap = '8px';
+          const count = document.createElement('div');
+          count.className = 'indicator-meta';
+          const clearBtn = document.createElement('button');
+          clearBtn.type = 'button';
+          clearBtn.className = 'btn btn-inline';
+          clearBtn.textContent = 'Pulisci';
+          clearBtn.addEventListener('click', () => {
+            state.indicators[tf][def.key] = [];
+            buildIndicatorsEditor();
+            renderPreview();
+          });
+          rightWrap.appendChild(count);
+          rightWrap.appendChild(clearBtn);
+          boxHeader.appendChild(name);
+          boxHeader.appendChild(rightWrap);
+          const chips = document.createElement('div');
+          chips.className = 'chips';
+          const details = document.createElement('details');
+          details.className = 'selector';
+          details.innerHTML = `<summary>Seleziona Opzioni</summary>`;
+          const selectorBody = document.createElement('div');
+          selectorBody.className = 'selector-body';
+          getIndicatorGroups(def).forEach(group => {
+            const groupBlock = document.createElement('section');
+            groupBlock.className = 'option-group';
+            const title = document.createElement('div');
+            title.className = 'option-group-title';
+            if (group.color) title.dataset.color = group.color;
+            title.textContent = group.label;
+            groupBlock.appendChild(title);
+            const optionList = document.createElement('div');
+            optionList.className = 'option-list';
+            (group.options || []).forEach(optionValue => {
+              const label = document.createElement('label');
+              label.className = 'option-item';
+              const input = document.createElement('input');
+              input.type = 'checkbox';
+              input.checked = getOrderedSelected(tf, def).includes(optionValue);
+              input.addEventListener('change', () => {
+                const current = new Set(state.indicators[tf][def.key]);
+                if (input.checked) current.add(optionValue); else current.delete(optionValue);
+                state.indicators[tf][def.key] = getIndicatorOptions(def).filter(item => current.has(item));
+                renderIndicatorOptions(tf, def, chips, count);
+                renderPreview();
+              });
+              const text = document.createElement('span');
+              text.textContent = optionValue;
+              label.appendChild(input);
+              label.appendChild(text);
+              optionList.appendChild(label);
+            });
+            groupBlock.appendChild(optionList);
+            selectorBody.appendChild(groupBlock);
+          });
+          details.appendChild(selectorBody);
+          box.appendChild(boxHeader);
+          box.appendChild(chips);
+          box.appendChild(details);
+          renderIndicatorOptions(tf, def, chips, count);
+          grid.appendChild(box);
+        });
+        indicatorsSection.appendChild(grid);
+        card.appendChild(indicatorsSection);
+
+        const spaceSection = buildSpaceEditorSection(tf);
+        card.appendChild(spaceSection);
+
+        indicatorsEditor.appendChild(card);
+      });
+    }
+    function renderReportList(values) {
+      if (!values || !values.length) return `<span class="dash">—</span>`;
+      return values.map(value => `<div class="report-list-item">• ${escapeHtml(value)}</div>`).join('');
+    }
+    function renderWritingLines(count, fieldLabel = '') {
+      const safeAttr = String(fieldLabel || 'notes-field').toLowerCase().replace(/[^a-z0-9_-]+/g, '-').replace(/^-+|-+$/g, '') || 'notes-field';
+      const safeLabel = escapeHtml(fieldLabel || 'Campo compilabile');
+      return `<div class="fillable-writing-block"><textarea class="fillable-textarea" rows="${count}" name="${safeAttr}" aria-label="${safeLabel}"></textarea><div class="writing-lines">${Array.from({ length: count }).map(() => '<div class="writing-line"></div>').join('')}</div></div>`;
+    }
+    function collectSortedTargets() {
+      const targets = [];
+      config.indicator_timeframes.forEach(tf => {
+        config.space_items.forEach(item => {
+          const entry = getSpaceEntry(tf, item);
+          if (!entry.selected) return;
+          const level = parseNumber(entry.level);
+          const gap = calculateGap(state.commonClose, entry.level);
+          if (level === null || gap === null) return;
+          targets.push({
+            tf,
+            item,
+            level,
+            direction: entry.direction || '',
+            type: entry.type || '',
+            gap,
+            absGap: Math.abs(gap)
+          });
+        });
+      });
+      targets.sort((a, b) => a.absGap - b.absGap || a.gap - b.gap || a.tf.localeCompare(b.tf) || a.item.localeCompare(b.item));
+      return targets;
+    }
+    function renderTargetsSection() {
+      const targets = collectSortedTargets();
+      if (!targets.length) {
+        return `<div class="space-item-line"><span class="dash">—</span></div>`;
+      }
+      return targets.map(target => {
+        const parts = [
+          escapeHtml(target.tf),
+          renderSpaceItemToken(target.item)
+        ];
+        if (target.direction) parts.push(escapeHtml(target.direction));
+        if (target.type) parts.push(renderTypeToken(target.type));
+        parts.push(escapeHtml(formatMoney(target.level)));
+        parts.push(`<span class="${gapClass(target.gap)}">${escapeHtml(formatSignedMoney(target.gap))}</span>`);
+        return `<div class="space-item-line">${parts.join(' - ')}</div>`;
+      }).join('');
+    }
+    function renderLeadingWritableSections() {
+      return `<section class="summary-stack">
+        <div class="summary-block">
+          <div class="summary-block-title">Outcome</div>
+          ${renderWritingLines(6, 'Outcome')}
+        </div>
+        <div class="summary-block">
+          <div class="summary-block-title">Note</div>
+          ${renderWritingLines(6, 'Note')}
+        </div>
+      </section>`;
+    }
+    function renderClosureSection() {
+      return `<section class="tf-report">
+        <div class="tf-report-title">Chiusura</div>
+        <div class="tf-chapter">
+          <div class="chapter-title">Targets</div>
+          ${renderTargetsSection()}
+        </div>
+        <div class="tf-chapter">
+          <div class="chapter-title">Verdetto</div>
+          ${renderWritingLines(6, 'Verdetto')}
+        </div>
+        <div class="tf-chapter">
+          <div class="chapter-title">Decisione</div>
+          <div class="verdict-hint">Indica cosa avresti fatto. Ingresso o no? Se si, indica strike price o target di prezzo.</div>
+          ${renderWritingLines(3, 'Decisione')}
+        </div>
+        <div class="tf-chapter">
+          <div class="chapter-title">Lettura Carta</div>
+          ${renderWritingLines(6, 'Lettura Carta')}
+        </div>
+        <div class="tf-chapter">
+          <div class="chapter-title">Modifiche</div>
+          ${renderWritingLines(3, 'Modifiche')}
+        </div>
+      </section>`;
+    }
+    function renderPreview() {
+      state.title.ticker = tickerInput.value;
+      state.title.date = dateInput.value;
+      state.title.direction = directionSelect.value;
+      state.title.mode = reportModeSelect.value;
+      state.commonClose = globalCloseInput.value;
+      const chunkPairs = (items) => {
+        const rows = [];
+        for (let i = 0; i < items.length; i += 2) rows.push(items.slice(i, i + 2));
+        return rows.map(pair => {
+          const cells = pair.map(entry => `<td>${escapeHtml(entry.tf)}</td><td>${entry.value || '<span class="dash">—</span>'}</td>`).join('');
+          return `<tr>${cells}${pair.length < 2 ? '<td></td><td></td>' : ''}</tr>`;
+        }).join('');
+      };
+      const smaItems = config.timeframes.map(tf => ({ tf, value: state.sma21[tf] ? escapeHtml(state.sma21[tf]) : '' }));
+      const smaRows = chunkPairs(smaItems);
+      const marketSliItems = marketSliIndices.map(index => ({ tf: index, value: state.marketSli[index] ? escapeHtml(state.marketSli[index]) : '' }));
+      const marketSliRows = chunkPairs(marketSliItems);
+      const candleItems = config.timeframes.map(tf => {
+        const pattern = state.candles[tf]?.pattern || '';
+        const attrs = state.candles[tf]?.attributes || [];
+        const status = state.candles[tf]?.status || '';
+        const daysOpen = state.candles[tf]?.daysOpen || '';
+        const combinedParts = pattern ? [pattern, ...attrs] : [];
+        if (status) combinedParts.push(status);
+        if (status === 'Aperta' && candleOpenDayTimeframes.has(tf) && daysOpen) combinedParts.push(`${daysOpen} giorni`);
+        const combined = combinedParts.join(', ');
+        return { tf, value: combined ? escapeHtml(combined) : '' };
+      });
+      const candleRows = chunkPairs(candleItems);
+      const indicatorColumns = [[indicatorDefs[0], indicatorDefs[1]], [indicatorDefs[2], indicatorDefs[3]]];
+      const tfSections = config.indicator_timeframes.map(tf => {
+        const indicatorHtml = indicatorColumns.map(col => `<div>${col.map(def => `<div class="indicator-report-box"><div class="indicator-report-name">${escapeHtml(def.label)}</div><div class="indicator-report-body">${renderReportList(getOrderedSelected(tf, def))}</div></div>`).join('')}</div>`).join('');
+        return `<section class="tf-report">
+          <div class="tf-report-title">${escapeHtml(tf)}</div>
+          <div class="tf-chapter">
+            <div class="chapter-title">Indicatori</div>
+            <div class="indicator-report-grid">${indicatorHtml}</div>
+            ${renderWritingLines(2, `${tf} Indicatori`)}
+          </div>
+        </section>`;
+      }).join('');
+      const leadingWritableSections = renderLeadingWritableSections();
+      const closureSection = renderClosureSection();
+      const decisionMeta = '<div class="report-title">DECISIONE: GIUSTA / SBAGLIATA</div>';
+      const targetMeta = '<div class="report-title">TARGET: GIUSTO / SBAGLIATO</div>';
+      const closeMeta = parseNumber(state.commonClose) === null ? '' : `<div class="report-meta">Close comune: ${escapeHtml(formatMoney(state.commonClose))}</div>`;
+      printReport.innerHTML = `<header class="report-header"><div class="report-title">${escapeHtml(composeTitle())}</div>${decisionMeta}${targetMeta}${closeMeta}</header>
+        ${leadingWritableSections}
+        <section class="summary-grid-2">
+          <div class="summary-block"><div class="summary-block-title">21SMA</div><table class="report-table summary-table-4"><thead><tr><th>TF</th><th>Stato</th><th>TF</th><th>Stato</th></tr></thead><tbody>${smaRows}</tbody></table></div>
+          <div class="summary-block"><div class="summary-block-title">Candele</div><table class="report-table summary-table-4"><thead><tr><th>TF</th><th>Pattern</th><th>TF</th><th>Pattern</th></tr></thead><tbody>${candleRows}</tbody></table></div>
+        </section>
+        <section class="summary-grid-2">
+          <div class="summary-block"><div class="summary-block-title">Market SLI</div><table class="report-table summary-table-4"><thead><tr><th>Indice</th><th>Selezione</th><th>Indice</th><th>Selezione</th></tr></thead><tbody>${marketSliRows}</tbody></table></div>
+        </section>
+        ${tfSections}
+        ${closureSection}`;
+    }
+    function buildEditors() {
+      populateDirectionOptions();
+      populateReportModeOptions();
+      buildMarketSliEditor();
+      buildSmaEditor();
+      buildCandlesEditor();
+      buildIndicatorsEditor();
+      directionSelect.value = state.title.direction;
+      reportModeSelect.value = state.title.mode;
+      globalCloseInput.value = state.commonClose;
+    }
+    async function exportJson() {
+      const payload = {
+        title: { ticker: (state.title.ticker || '').trim().toUpperCase(), date: formatDate(state.title.date), direction: state.title.direction, mode: state.title.mode },
+        marketSli: state.marketSli,
+        sma21: state.sma21,
+        candles: state.candles,
+        indicators: state.indicators,
+        commonClose: state.commonClose,
+        spazio: state.space
+      };
+      const json = JSON.stringify(payload, null, 2);
+      const filename = `selection-${(state.title.ticker || 'report').trim().toUpperCase() || 'report'}.json`;
+      const blob = new Blob([json], { type: 'application/json' });
+
+      try {
+        if (navigator.share && window.File) {
+          const sharedFile = new File([blob], filename, { type: 'application/json' });
+          if (!navigator.canShare || navigator.canShare({ files: [sharedFile] })) {
+            await navigator.share({ files: [sharedFile], title: filename });
+            configStatus.textContent = 'JSON condiviso/esportato.';
+            return;
+          }
+        }
+      } catch (error) {
+        // Se l’utente annulla la condivisione, passa al download/fallback senza bloccare l’app.
+      }
+
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      a.style.display = 'none';
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+      configStatus.textContent = 'JSON esportato. Su iPad potrebbe apparire nel menu Condividi/Download di Safari.';
+    }
+    function readTextFile(file) {
+      if (file && typeof file.text === 'function') return file.text();
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(String(reader.result || ''));
+        reader.onerror = () => reject(reader.error || new Error('Impossibile leggere il file.'));
+        reader.readAsText(file);
+      });
+    }
+
+    function resetForm() {
+      tickerInput.value = 'SPX';
+      dateInput.value = '';
+      state.title.ticker = 'SPX';
+      state.title.date = '';
+      state.title.direction = config.directions[0] || 'UP';
+      state.title.mode = reportModes[0];
+      globalCloseInput.value = state.commonClose;
+      state.commonClose = '';
+      globalCloseInput.value = '';
+      state.marketSli = {};
+      state.sma21 = {};
+      state.candles = {};
+      state.indicators = {};
+      state.space = {};
+      normalizeState();
+      buildEditors();
+      renderPreview();
+      configStatus.textContent = 'Form resettato.';
+    }
+
+    tickerInput.addEventListener('input', renderPreview);
+    globalCloseInput.addEventListener('input', () => { state.commonClose = globalCloseInput.value; buildIndicatorsEditor(); renderPreview(); });
+    dateInput.addEventListener('input', renderPreview);
+    directionSelect.addEventListener('change', renderPreview);
+    reportModeSelect.addEventListener('change', renderPreview);
+    document.getElementById('print-btn').addEventListener('click', () => window.print());
+    document.getElementById('export-json-btn').addEventListener('click', exportJson);
+    document.getElementById('reset-btn').addEventListener('click', resetForm);
+    document.getElementById('default-config-btn').addEventListener('click', () => {
+      config = deepCopy(defaultConfig);
+      normalizeState();
+      buildEditors();
+      renderPreview();
+      configFileInput.value = '';
+      configStatus.textContent = 'Configurazione predefinita ripristinata.';
+    });
+    configFileInput.addEventListener('change', async (event) => {
+      const file = event.target.files?.[0];
+      if (!file) return;
+      try {
+        const text = await readTextFile(file);
+        const parsed = parseConfigText(text);
+        if (!isValidConfig(parsed)) throw new Error('Formato YAML/JSON non valido o incompleto.');
+        config = parsed;
+        normalizeState();
+        buildEditors();
+        renderPreview();
+        configStatus.textContent = `Configurazione caricata: ${file.name}`;
+      } catch (error) {
+        configStatus.textContent = `Errore: ${error.message}`;
+      }
+    });
+
+    tickerInput.value = state.title.ticker;
+    reportModeSelect.value = state.title.mode;
+    globalCloseInput.value = state.commonClose;
+    const isIOSLike = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+    if (isIOSLike) {
+      configStatus.textContent = 'iPad: usa Safari. Le preview di Dropbox/File/Noteful possono bloccare JavaScript o download.';
+    }
+    normalizeState();
+    buildEditors();
+    renderPreview();
+  </script>
+</body>
+</html>
