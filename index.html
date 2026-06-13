@@ -1,1682 +1,613 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="it">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-title" content="Multi-TF Report" />
-  <meta name="format-detection" content="telephone=no" />
-  <title>Printable Multi-TF Report</title>
-  <style>
-    :root {
-      --accent: #ff7a00;
-      --app-font: "Aptos Display", Aptos, "Segoe UI", Calibri, Arial, sans-serif;
-      --accent-2: #f59e0b;
-      --accent-soft: #fff3e8;
-      --ink: #0f172a;
-      --ink-soft: #334155;
-      --line: #cbd5e1;
-      --line-strong: #64748b;
-      --panel: #ffffff;
-      --page-bg: #eef2f7;
-      --paper: #ffffff;
-      --muted: #6b7280;
-      --navy: #111827;
-      --shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
-      --red: #b91c1c;
-      --red-soft: #fef2f2;
-      --lime: #3f7f00;
-      --lime-soft: #f7fee7;
-      --violet: #7c3aed;
-      --violet-soft: #f5f3ff;
-      --yellow: #a16207;
-      --yellow-soft: #fefce8;
-    }
-    * { box-sizing: border-box; }
-    html { -webkit-text-size-adjust: 100%; }
-    button, input, select, textarea { font-size: 16px; touch-action: manipulation; }
-    input, select, textarea { -webkit-user-select: text; user-select: text; }
-    html, body { margin: 0; padding: 0; background: var(--page-bg); color: var(--ink); font-family: var(--app-font); font-size: 16px; }
-    .app { max-width: 1760px; margin: 0 auto; padding: 20px; display: grid; grid-template-columns: minmax(720px, 1.1fr) minmax(430px, 0.9fr); gap: 20px; align-items: start; }
-    .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 16px; box-shadow: var(--shadow); }
-    .section { margin-top: 16px; }
-    .section:first-child { margin-top: 0; }
-    .section-title { display: inline-block; padding: 6px 10px; background: var(--navy); border-left: 4px solid var(--accent); color: #fff; font-size: 13px; font-weight: 800; letter-spacing: 0.09em; text-transform: uppercase; margin: 0 0 12px; }
-    .grid-3, .grid-4, .grid-5 { display: grid; gap: 12px; }
-    .grid-3 { grid-template-columns: repeat(3, minmax(0,1fr)); }
-    .grid-4 { grid-template-columns: repeat(4, minmax(0,1fr)); }
-    .grid-5 { grid-template-columns: repeat(5, minmax(0,1fr)); }
-    .editor-grid-2, .summary-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; align-items: start; }
-    .setup-grid { display: grid; grid-template-columns: 1fr; gap: 12px; align-items: start; }
-    .editor-subpanel, .summary-block { border: 1px solid var(--line); border-radius: 12px; padding: 10px; background: #fff; }
-    .summary-block { background: linear-gradient(180deg, #fff 0%, #fcfcfd 100%); }
-    .subpanel-title { margin: 0 0 10px; font-size: 13px; font-weight: 900; letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent); }
-    .field label { display: block; font-size: 12.5px; font-weight: 800; letter-spacing: 0.05em; text-transform: uppercase; color: var(--ink-soft); margin-bottom: 6px; }
-    .field input, .field select { width: 100%; padding: 11px 13px; border: 1px solid var(--line-strong); background: #fff; color: var(--ink); border-radius: 8px; font-size: 16px; font-family: var(--app-font); }
-    .field input[type="file"] { padding: 8px 0; border: none; }
-    .field input[type="number"]::-webkit-outer-spin-button, .field input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
-    .field input[type="number"] { -moz-appearance: textfield; }
-    .toolbar { margin-top: 14px; display: flex; flex-wrap: wrap; gap: 10px; }
-    .btn { appearance: none; border: 1px solid var(--navy); background: #fff; color: var(--navy); padding: 10px 14px; border-radius: 8px; font-size: 12.5px; font-weight: 800; letter-spacing: 0.05em; text-transform: uppercase; cursor: pointer; font-family: var(--app-font); }
-    .btn-primary { background: var(--accent); border-color: var(--accent); color: #fff; }
-    .btn-inline { padding: 6px 8px; font-size: 11px; border-radius: 7px; }
-    .status-line { margin-top: 10px; min-height: 18px; font-size: 12px; color: var(--muted); }
-    .editor-table, .space-table { width: 100%; border-collapse: collapse; table-layout: auto; font-size: 14px; }
-    .editor-table th, .editor-table td, .space-table th, .space-table td { border: 1px solid var(--line); padding: 8px; vertical-align: top; }
-    .editor-table th, .space-table th { text-align: left; background: #f8fafc; font-size: 11px; font-weight: 800; letter-spacing: 0.05em; text-transform: uppercase; color: var(--navy); white-space: normal; line-height: 1.2; }
-    .editor-table select, .editor-table input, .space-table select, .space-table input { width: 100%; max-width: 100%; min-width: 0; font-family: var(--app-font); font-size: 16px; }
-    .table-scroll { width: 100%; overflow-x: auto; overflow-y: hidden; -webkit-overflow-scrolling: touch; }
-    .candles-table { min-width: 900px; }
-    .space-table { min-width: 860px; }
-    .tf-cell { width: 62px; min-width: 62px; font-weight: 800; text-align: center; background: var(--accent-soft); white-space: nowrap; }
-    .attr-wrap { display: grid; grid-template-columns: repeat(2, minmax(110px, 1fr)); gap: 8px 14px; align-items: start; }
-    .check { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; white-space: nowrap; color: var(--ink); }
-    .indicator-card { border: 1px solid var(--line); border-radius: 12px; padding: 12px; margin-top: 12px; background: #fff; }
-    .indicator-card:first-child { margin-top: 0; }
-    .indicator-card-header { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding-bottom: 8px; border-bottom: 1px solid var(--line); margin-bottom: 10px; }
-    .indicator-card-title { font-size: 16px; font-weight: 900; letter-spacing: 0.08em; text-transform: uppercase; color: var(--navy); }
-    .card-section { margin-top: 12px; }
-    .card-section:first-of-type { margin-top: 0; }
-    .card-section-title { margin: 0 0 8px; font-size: 12px; font-weight: 900; letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent); }
-    .indicator-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-    .indicator-box { border: 1px solid var(--line); border-radius: 10px; padding: 10px; background: #fff; min-height: 120px; }
-    .indicator-box-header { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 8px; }
-    .indicator-name { font-size: 12px; font-weight: 900; letter-spacing: 0.05em; text-transform: uppercase; }
-    .indicator-meta { font-size: 11px; color: var(--muted); white-space: nowrap; }
-    .chips { display: flex; flex-wrap: wrap; gap: 6px; min-height: 28px; margin-bottom: 8px; }
-    .chip { display: inline-flex; align-items: center; gap: 6px; padding: 4px 8px; border-radius: 999px; border: 1px solid #fed7aa; background: #fff7ed; color: #7c2d12; font-size: 11px; line-height: 1.2; }
-    details.selector { border-top: 1px dashed var(--line); padding-top: 8px; }
-    details.selector > summary { cursor: pointer; list-style: none; font-size: 11px; font-weight: 800; letter-spacing: 0.05em; text-transform: uppercase; color: var(--ink-soft); }
-    details.selector > summary::-webkit-details-marker { display: none; }
-    .selector-body { margin-top: 8px; max-height: 320px; overflow: auto; padding-right: 4px; }
-    .option-group { border: 1px solid var(--line); border-radius: 10px; padding: 8px; margin-top: 8px; }
-    .option-group:first-child { margin-top: 0; }
-    .option-group-title { display: inline-block; margin: 0 0 8px; padding: 4px 8px; border-radius: 999px; border: 1px solid var(--line); background: #fafafa; color: var(--ink); font-size: 11px; font-weight: 800; letter-spacing: 0.04em; text-transform: uppercase; }
-    .option-group-title[data-color="red"] { color: var(--red); border-color: #fecaca; background: var(--red-soft); }
-    .option-group-title[data-color="lime"] { color: var(--lime); border-color: #d9f99d; background: var(--lime-soft); }
-    .option-group-title[data-color="violet"] { color: var(--violet); border-color: #ddd6fe; background: var(--violet-soft); }
-    .option-group-title[data-color="yellow"] { color: var(--yellow); border-color: #fde68a; background: var(--yellow-soft); }
-    .option-list { display: grid; grid-template-columns: 1fr; gap: 6px; }
-    .option-item { display: flex; align-items: flex-start; gap: 6px; font-size: 12px; line-height: 1.3; }
-    .space-note { font-size: 11px; color: var(--muted); padding: 8px 10px; border: 1px dashed var(--line); border-radius: 10px; background: #f8fafc; margin-bottom: 10px; }
-    .space-table th:nth-child(1) { width: 60px; text-align: center; }
-    .space-table th:nth-child(2) { width: 160px; }
-    .space-table th:nth-child(3) { width: 150px; }
-    .space-table th:nth-child(4) { width: 140px; }
-    .space-table th:nth-child(5) { width: 150px; }
-    .space-table th:nth-child(6) { width: 120px; }
-    .space-gap { font-weight: 700; }
-    .space-row-off { opacity: 0.55; }
-    .verdict-hint { font-size: 11px; color: var(--ink-soft); padding: 8px 10px; border: 1px dashed var(--line); border-radius: 10px; background: #f8fafc; }
-    .paper-wrap { position: sticky; top: 20px; }
-    .paper-shell { background: #dde4ee; border-radius: 14px; padding: 14px; border: 1px solid #cbd5e1; }
-    .paper { width: 210mm; min-height: 297mm; max-width: 100%; margin: 0 auto; background: var(--paper); color: var(--ink); box-shadow: 0 10px 28px rgba(15, 23, 42, 0.16); padding: 9mm 9mm 10mm; overflow: hidden; }
-    .report-header { border-bottom: 2px solid var(--navy); padding-bottom: 7px; margin-bottom: 10px; }
-    .report-title { font-size: 24px; font-weight: 900; letter-spacing: 0.035em; text-transform: uppercase; line-height: 1.12; word-break: break-word; color: var(--navy); }
-    .report-meta { margin-top: 4px; font-size: 11.5px; font-weight: 700; color: var(--ink-soft); text-transform: uppercase; letter-spacing: 0.05em; }
-    .summary-block-title, .tf-report-title, .chapter-title { margin: 0 0 6px; padding: 4px 8px; background: var(--navy); border-left: 4px solid var(--accent); color: #fff; font-size: 11.5px; font-weight: 900; letter-spacing: 0.08em; text-transform: uppercase; display: inline-block; }
-    .report-table { width: 100%; border-collapse: collapse; margin-top: 2px; font-size: 11.5px; }
-    .report-table th, .report-table td { border: 1px solid #7b8794; padding: 5px 6px; text-align: left; vertical-align: top; }
-    .report-table th { background: #e5e7eb; color: var(--navy); font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; font-size: 9.5px; }
-    .summary-table-4 td:nth-child(odd), .summary-table-4 th:nth-child(odd) { font-weight: 800; }
-    .summary-table-4 td:nth-child(1), .summary-table-4 td:nth-child(3), .summary-table-4 th:nth-child(1), .summary-table-4 th:nth-child(3) { width: 11%; }
-    .summary-table-4 td:nth-child(2), .summary-table-4 td:nth-child(4), .summary-table-4 th:nth-child(2), .summary-table-4 th:nth-child(4) { width: 39%; }
-    .tf-report { margin-top: 10px; break-inside: auto; page-break-inside: auto; }
-    .tf-chapter { margin-top: 8px; break-inside: auto; page-break-inside: auto; }
-    .indicator-report-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-    .indicator-report-box { border: 1px solid #8ea0b5; padding: 6px 7px; min-height: 56px; }
-    .indicator-report-name { font-size: 10.8px; font-weight: 900; letter-spacing: 0.05em; text-transform: uppercase; color: var(--navy); margin-bottom: 3px; }
-    .indicator-report-body { font-size: 11px; }
-    .report-list-item { margin-top: 1px; line-height: 1.25; }
-    .report-list-item:first-child { margin-top: 0; }
-    .dash { color: #888; }
-    .close-line { margin: 1px 0 6px; font-size: 11.5px; font-weight: 700; }
-    .space-item-line { margin-top: 2px; font-size: 11.2px; line-height: 1.32; }
-    .summary-stack .summary-block + .summary-block { margin-top: 12px; }
-    .fillable-writing-block { position: relative; margin-top: 6px; }
-    .fillable-textarea { position: absolute; inset: 0; width: 100%; height: 100%; padding: 0 2px; border: none; background: transparent; color: var(--ink); font-family: var(--app-font); font-size: 11.5px; line-height: 0.6cm; resize: none; overflow: hidden; }
-    .fillable-textarea:focus { outline: 1px dashed var(--accent); outline-offset: 2px; }
-    .writing-lines { margin-top: 0; pointer-events: none; }
-    .writing-line { height: 0.6cm; border-bottom: 1px solid #707070; }
-    .writing-line + .writing-line { margin-top: 1px; }
-    .gap-positive { color: rgb(0, 255, 0) !important; font-weight: 800; }
-    .gap-negative { color: rgb(255, 0, 0) !important; font-weight: 800; }
-    .type-soft { color: rgb(0, 255, 0); font-weight: 800; }
-    .type-hard { color: rgb(255, 0, 0); font-weight: 800; }
-    .item-token { font-weight: 900; }
-    .item-token-tbb, .item-token-bbb, .item-token-bb { color: rgb(0, 0, 255); }
-    .item-token-sma3 { color: rgb(0, 255, 0); }
-    .item-token-sma13 { color: rgb(255, 255, 0); background: #111; padding: 0 1px; }
-    .item-token-sma21 { color: rgb(0, 0, 139); }
-    .item-token-sma34 { color: rgb(30, 144, 255); }
-    .item-token-sma55 { color: rgb(255, 165, 0); }
-    .item-token-sma89 { color: rgb(0, 139, 139); }
-    .item-token-sma144 { color: rgb(255, 255, 255); padding: 0 2px; text-shadow: -0.45px 0 #000, 0 0.45px #000, 0 -0.45px #000, 0.45px 0 #000; }
-    .item-token-sma233 { color: rgb(0, 0, 0); }
-    .item-token-sma377 { color: rgb(165, 42, 42); }
-    .item-token-sma610 { color: rgb(148, 0, 211); }
-    .item-token-sma987 { color: rgb(255, 0, 255); }
-    @media (max-width: 1360px) { .app { grid-template-columns: 1fr; } .paper-wrap { position: static; } }
-    @media (max-width: 1180px) { .app { padding: 12px; gap: 12px; } .panel { padding: 12px; } .paper-shell { padding: 8px; } .paper { width: 100%; min-height: auto; padding: 7mm; } }
-    @media (max-width: 980px) { .grid-3, .grid-4, .grid-5, .editor-grid-2, .summary-grid-2, .setup-grid, .indicator-grid, .indicator-report-grid { grid-template-columns: 1fr; } }
-    @media print {
-      @page { size: A4 portrait; margin: 7mm; }
-      html, body { background: #fff; }
-      .app { display: block; max-width: none; padding: 0; margin: 0; }
-      .panel:first-child, .paper-shell { border: none; box-shadow: none; padding: 0; background: transparent; }
-      .panel:first-child { display: none !important; }
-      .paper { width: auto; min-height: auto; box-shadow: none; margin: 0; padding: 0; }
-      .tf-report, .tf-chapter, .summary-block { break-inside: auto; page-break-inside: auto; }
-      .summary-grid-2, .indicator-report-grid { gap: 6px; }
-    }
-  </style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Diario Backwork v10 — Opzioni USA</title>
+<style>
+  :root{--bg:#faf9f6;--panel:#fff;--ink:#1c1b18;--muted:#6b675f;--line:#e4e0d8;--line2:#efece5;
+    --accent:#136f78;--accent-d:#0e565d;--won:#1f7a4d;--won-bg:#e9f4ee;--lost:#b3261e;--lost-bg:#fbeceb;
+    --warn:#9a6b00;--warn-bg:#f6efdd;--blue-bg:#eaf3f4;--hardc:#7a3da0;--hard-bg:#f1eaf6;--neu:#b9b3a7}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;font-size:15px;line-height:1.5}
+  .mono{font-family:"SF Mono","JetBrains Mono",Consolas,"Liberation Mono",monospace;font-variant-numeric:tabular-nums}
+  header{padding:22px 20px 0;max-width:1120px;margin:0 auto}
+  h1{font-size:19px;margin:0}.sub{color:var(--muted);font-size:13px;margin-top:3px}
+  nav{display:flex;gap:4px;max-width:1120px;margin:16px auto 0;padding:0 20px;border-bottom:1px solid var(--line)}
+  nav button{border:0;background:transparent;color:var(--muted);font:inherit;padding:10px 14px;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px}
+  nav button.on{color:var(--ink);border-bottom-color:var(--accent);font-weight:600}
+  nav .count{display:inline-block;min-width:18px;padding:0 5px;margin-left:6px;border-radius:9px;background:var(--line2);color:var(--muted);font-size:12px;line-height:18px;text-align:center}
+  main{max-width:1120px;margin:0 auto;padding:22px 20px 80px}
+  .panel{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:18px}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:14px 18px}
+  .grid3{display:grid;grid-template-columns:1.4fr 1fr 1fr;gap:14px 18px}
+  @media(max-width:640px){.grid,.grid3{grid-template-columns:1fr}}
+  label{display:block;font-size:13px;color:var(--muted);margin:0 0 4px}
+  input[type=text],input[type=number],input[type=date],select,textarea{width:100%;padding:9px 10px;border:1px solid var(--line);border-radius:8px;background:#fff;font:inherit;color:var(--ink)}
+  textarea{min-height:80px;resize:vertical;line-height:1.45}
+  .full{grid-column:1/-1}
+  fieldset{border:1px solid var(--line);border-radius:8px;padding:12px 14px;margin:0}
+  legend{font-size:12px;color:var(--muted);padding:0 6px;text-transform:uppercase;letter-spacing:.5px}
+  .checks{display:flex;flex-wrap:wrap;gap:9px 16px;margin-top:4px}
+  .chk{display:flex;align-items:center;gap:7px;font-size:13.5px;color:var(--ink);cursor:pointer}
+  .chk input{width:16px;height:16px;accent-color:var(--accent);flex:none}
+  .seg{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden;flex-wrap:wrap}
+  .seg button{border:0;background:#fff;font:inherit;padding:8px 14px;cursor:pointer;color:var(--muted)}
+  .seg button.on{background:var(--accent);color:#fff;font-weight:600}
+  .btn{border:1px solid var(--accent);background:var(--accent);color:#fff;font:inherit;font-weight:600;padding:10px 18px;border-radius:8px;cursor:pointer}
+  .btn:hover{background:var(--accent-d);border-color:var(--accent-d)}
+  .btn.ghost{background:#fff;color:var(--accent)}.btn.sm{padding:7px 12px;font-weight:500;font-size:14px}
+  .btn.danger{border-color:var(--lost);color:var(--lost);background:#fff}
+  .row-actions{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:18px}
+  .badge{display:inline-block;padding:3px 9px;border-radius:20px;font-size:12px;font-weight:600}
+  .badge.ok{background:var(--won-bg);color:var(--won)}.badge.sub{background:var(--warn-bg);color:var(--warn)}.badge.up{background:var(--blue-bg);color:var(--accent-d)}
+  .k{font-size:10.5px;padding:1px 6px;border-radius:10px;font-weight:700;margin-left:6px;vertical-align:middle}
+  .k.hard{background:var(--hard-bg);color:var(--hardc)}.k.soft{background:var(--line2);color:var(--muted)}.k.cond{background:var(--warn-bg);color:var(--warn)}
+  .sc{font-size:11px;color:var(--accent-d);font-weight:600}.v-stay{background:var(--won-bg);color:var(--won)}.v-exit{background:var(--lost-bg);color:var(--lost)}.v-3c{background:var(--blue-bg);color:var(--accent-d)}
+  .mx{width:100%;border-collapse:collapse;font-size:13.5px;margin-top:6px}
+  .mx th,.mx td{padding:5px 8px;border-bottom:1px solid var(--line2)}
+  .mx th{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.3px;text-align:center}
+  .mx th:first-child,.mx td:first-child{text-align:left}
+  .mx td.c{text-align:center}.mx input{width:17px;height:17px;accent-color:var(--accent)}
+  .dir-bull{border-left:3px solid var(--won)}.dir-bear{border-left:3px solid var(--lost)}.dir-neutral{border-left:3px solid var(--line)}
+  .counter{font-size:13px;color:var(--muted);margin-top:8px}.counter b{color:var(--ink)}
+  .countbox{display:inline-block;padding:4px 12px;border-radius:8px;background:var(--line2);color:var(--muted);font-weight:700;margin-top:8px}
+  .countbox.green{background:var(--won-bg);color:var(--won)}
+  .tflist{font-size:12.5px;color:var(--muted);margin-top:6px;line-height:1.6}.tflist b{color:var(--ink)}
+  .warnbox{background:var(--lost-bg);color:var(--lost);border-radius:8px;padding:9px 12px;font-size:13px;font-weight:600;margin-top:10px}
+  .tfblock{border:1px solid var(--line);border-radius:8px;margin-bottom:10px;background:#fff}
+  .tfblock>summary{cursor:pointer;padding:10px 12px;font-weight:600;display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+  .tfblock .inner{padding:0 12px 12px}
+  .tfmx{width:100%;border-collapse:collapse;font-size:13px}
+  .tfmx th,.tfmx td{padding:5px 6px;border-bottom:1px solid var(--line2);text-align:left}
+  .tfmx th{font-size:10.5px;color:var(--muted);text-transform:uppercase}
+  .tfmx select{padding:6px 6px;font-size:12.5px}
+  .barwrap{display:flex;align-items:center;gap:8px;margin-top:8px;font-size:12.5px;flex-wrap:wrap}
+  .bar{height:10px;border-radius:6px;overflow:hidden;display:flex;flex:1;min-width:110px;background:var(--line2)}
+  .bar .b{background:var(--won)}.bar .r{background:var(--lost)}.bar .nu{background:var(--neu)}
+  .obsrow{display:flex;flex-wrap:wrap;gap:10px;align-items:end;margin-top:8px}
+  .obsrow>div{flex:1;min-width:120px}
+  .diff{font-weight:700;white-space:nowrap;align-self:center}
+  .summbox{margin-top:14px;border:1px solid var(--line);border-radius:8px;padding:12px;background:#fcfbf9}
+  .summbox label{font-size:11px;text-transform:uppercase;letter-spacing:.4px}
+  .card{border:1px solid var(--line);border-radius:10px;padding:14px 16px;margin-bottom:16px;background:#fff}
+  .card h3{margin:0 0 2px;font-size:16px}.card .meta{color:var(--muted);font-size:13px}
+  .kv{margin:8px 0 0;font-size:13.5px}.kv b{font-weight:600}
+  details.sec{margin-top:10px}details.sec>summary{cursor:pointer;color:var(--accent-d);font-weight:600;font-size:14px;padding:4px 0}
+  .tracker{margin-top:12px;border:1px solid var(--line);border-radius:10px;padding:14px;background:#fcfbf9}
+  .rules{font-size:12.5px;color:#5c4f33;background:var(--warn-bg);border-radius:8px;padding:10px 12px;margin-bottom:12px;line-height:1.45}.rules b{color:#3d3420}
+  .verdict{border-radius:8px;padding:10px 12px;font-weight:600;font-size:14px;margin-top:10px}
+  .clog{width:100%;border-collapse:collapse;font-size:13px;margin-top:12px}
+  .clog th,.clog td{text-align:left;padding:7px 6px;border-bottom:1px solid var(--line2);vertical-align:top}
+  .clog th{font-size:11px;color:var(--muted);text-transform:uppercase}
+  .pill{font-size:11.5px;padding:2px 7px;border-radius:12px;background:var(--line2);color:var(--muted);white-space:nowrap}
+  .pill.exit{background:var(--lost-bg);color:var(--lost)}.pill.stay{background:var(--won-bg);color:var(--won)}.pill.c3{background:var(--blue-bg);color:var(--accent-d)}
+  .pill.y{background:var(--won-bg);color:var(--won)}.pill.n{background:var(--lost-bg);color:var(--lost)}.pill.p{background:var(--warn-bg);color:var(--warn)}
+  .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:14px}
+  @media(max-width:640px){.stats{grid-template-columns:1fr 1fr}}
+  .stat{background:#fff;border:1px solid var(--line);border-radius:10px;padding:16px}
+  .stat .lab{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px}.stat .val{font-size:28px;font-weight:700;margin-top:4px}.stat.hl{border-color:var(--accent)}
+  .gap{background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px 16px;margin-bottom:18px;font-size:14px}
+  table.hist{width:100%;border-collapse:collapse;font-size:14px}
+  table.hist th,table.hist td{text-align:left;padding:9px 8px;border-bottom:1px solid var(--line2);vertical-align:top}
+  table.hist th{font-size:12px;color:var(--muted);text-transform:uppercase}
+  td.num{text-align:right}.pct.win{color:var(--won);font-weight:700}.pct.loss{color:var(--lost);font-weight:700}
+  .empty{color:var(--muted);text-align:center;padding:40px 10px}
+  .toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:18px}.toolbar .spacer{flex:1}
+  .flash{color:var(--won);font-size:14px;font-weight:600}.warnline{color:var(--warn);font-size:12.5px;margin-top:8px}
+  .ovf{overflow-x:auto}
+</style>
 </head>
 <body>
-  <div class="app">
-    <section class="panel">
-      <div class="section">
-        <div class="section-title">Titolo</div>
-        <div class="grid-5">
-          <div class="field"><label for="ticker">Ticker</label><input id="ticker" type="text" placeholder="SPX" /></div>
-          <div class="field"><label for="report-date">Data</label><input id="report-date" type="date" /></div>
-          <div class="field"><label for="direction">Direzione</label><select id="direction"></select></div>
-          <div class="field"><label for="report-mode">Modalità</label><select id="report-mode"></select></div>
-          <div class="field"><label for="global-close">Close comune</label><input id="global-close" type="number" step="0.01" placeholder="XXXX.XX" /></div>
-        </div>
+<header>
+  <h1>Diario Backwork v10 — Opzioni USA</h1>
+  <div class="sub">Lettura multi-timeframe (Bull/Bear/Neutral), ostacoli multipli, support items hard/soft per TF, regola 3 candele / 7 ore / exit components. Solo USA · opzioni americane.</div>
+</header>
+<nav>
+  <button data-view="new" class="on">Nuovo trade</button>
+  <button data-view="open">Aperti <span class="count" id="c-open">0</span></button>
+  <button data-view="hist">Storico &amp; risultati <span class="count" id="c-hist">0</span></button>
+</nav>
+<main>
+  <section id="view-new">
+    <div class="panel">
+      <div class="grid3">
+        <div><label>Simbolo</label><input type="text" id="f-symbol" placeholder="es. NVDA" autocomplete="off"></div>
+        <div><label>Close price ($)</label><input type="number" id="f-close" step="any" placeholder="es. 240.50" oninput="refreshAllTF()"></div>
+        <div><label>Data ingresso</label><input type="date" id="f-date"></div>
+        <div class="full"><label>Tipo (filtra gli item per direzione)</label>
+          <div class="seg" id="f-type"><button data-v="call" class="on">Call (rialzo)</button><button data-v="put">Put (ribasso)</button></div></div>
       </div>
-      <div class="section">
-        <div class="section-title">Configurazione</div>
-        <div class="field"><label for="config-file">Carica config.yaml</label><input id="config-file" type="file" accept=".yaml,.yml,.json,text/yaml,text/x-yaml,application/json" /></div>
-        <div class="toolbar">
-          <button class="btn" id="default-config-btn" type="button">Usa config predefinita</button>
-          <button class="btn" id="export-json-btn" type="button">Esporta selezione JSON</button>
-          <button class="btn btn-primary" id="print-btn" type="button">Stampa</button>
-          <button class="btn" id="reset-btn" type="button">Reset</button>
+
+      <fieldset class="full" style="margin-top:14px"><legend>SLI (233)</legend>
+        <div class="grid">
+          <div><label>SLI sul Mercato</label><select id="sli-mkt2" onchange="checkSli()"><option value="no">No</option><option value="yes">Sì</option></select></div>
+          <div><label>SLI sul Sub-Index</label><select id="sli-sub" onchange="checkSli()"><option value="none">none (nessun sub-index)</option><option value="yes">Sì</option><option value="no">No</option></select></div>
         </div>
-        <div class="status-line" id="config-status"></div>
-      </div>
-      <div class="section">
-        <div class="section-title">Market SLI</div>
-        <div class="setup-grid">
-          <div class="editor-subpanel"><div id="market-sli-editor"></div></div>
+        <div id="sli-warn"></div>
+      </fieldset>
+
+      <fieldset class="full" style="margin-top:14px"><legend>Support items — Daily + 3-Day (servono ≥ 3 hard; stesso item su D e 3D conta 2 volte)</legend>
+        <div id="sup-mx"></div>
+        <div><span class="countbox" id="sup-count">Hard support: 0 / 3</span></div>
+        <div class="tflist" id="sup-lists"></div>
+      </fieldset>
+
+      <fieldset class="full" style="margin-top:14px"><legend>Lettura multi-timeframe (M → 233)</legend>
+        <div class="tflist" style="margin-bottom:8px">Direzione → Bull/Bear: <b>MDI</b> (verde della DM) è invertito (MDI giù = bull, su = bear). Le altre verdi sono medie: "in discesa con indebolimento" conta <b>bull</b> (anticipa il turn). Rosse e PDI: mapping normale.</div>
+        <div id="tf-module"></div>
+        <div class="summbox">
+          <label>Sommario timeframe — contesto · direzione (Bull/Bear/Neutral)</label>
+          <div class="tflist" id="tf-summary"></div>
         </div>
-      </div>
-      <div class="section">
-        <div class="section-title">Setup Multi-TF</div>
-        <div class="setup-grid">
-          <div class="editor-subpanel"><h3 class="subpanel-title">21SMA</h3><div id="sma-editor"></div></div>
-          <div class="editor-subpanel"><h3 class="subpanel-title">Candele</h3><div id="candles-editor"></div></div>
+        <div class="summbox">
+          <label>Ostacoli (tutti i TF) ordinati per Diff vs Close</label>
+          <div class="tflist mono" id="obs-summary"></div>
         </div>
-      </div>
-      <div class="section">
-        <div class="section-title">Indicatori / Spazio</div>
-        <div id="indicators-editor"></div>
-      </div>
-    </section>
-    <section class="paper-wrap">
-      <div class="paper-shell"><article class="paper" id="print-report"></article></div>
-    </section>
-  </div>
-  <script>
-    const defaultConfig = {
-  "timeframes": [
-    "M",
-    "8D",
-    "W",
-    "3D",
-    "D",
-    "233"
-  ],
-  "indicator_timeframes": [
-    "W",
-    "3D",
-    "D",
-    "233"
-  ],
-  "directions": [
-    "UP",
-    "DOWN"
-  ],
-  "sma21_states": [
-    "Piatta",
-    "Piatta con cambio direzione da salita.",
-    "Piatta con cambio direzione da discesa.",
-    "In salita.",
-    "In salita con cambio direzione da discesa.",
-    "In salita con cambio direzione da piatta.",
-    "In salita con rafforzamento.",
-    "In salita con indebolimento.",
-    "In discesa.",
-    "In discesa con rafforzamento.",
-    "In discesa con indebolimento.",
-    "In discesa con cambio direzione da salita.",
-    "In discesa con cambio direzione da piatta."
-  ],
-  "candlestick_patterns": [
-    "Doji",
-    "Doji Long Legged",
-    "Gravestone Doji",
-    "Dragonfly Doji",
-    "Spinning Top",
-    "Hanging Man",
-    "Shooting Star",
-    "Inverted Hammer",
-    "Hammer",
-    "Morning Star",
-    "Piercing Pattern",
-    "Tweezer Top",
-    "Bullish Engulfing Pattern",
-    "Evening Star",
-    "Dark cloud cover",
-    "Tweezer Bottom",
-    "Bearish Engulfing Pattern",
-    "Marubozu"
-  ],
-  "candlestick_attributes": [
-    "Bianca",
-    "Rossa",
-    "LUW",
-    "LLW"
-  ],
-  "christmas_cross_groups": [
-    {
-      "label": "Status",
-      "options": [
-        "Bullish",
-        "Bearish",
-        "Bullish HH",
-        "Bearish HH"
-      ]
-    },
-    {
-      "label": "Separation",
-      "options": [
-        "Bullish SEP",
-        "Bearish SEP",
-        "Bullish SEP + X",
-        "Bearish SEP + X"
-      ]
-    },
-    {
-      "label": "Windshield Effect",
-      "options": [
-        "Bullish WS",
-        "Bearish WS"
-      ]
-    },
-    {
-      "label": "Crossover",
-      "options": [
-        "Bullish X-over",
-        "Bearish X-over",
-        "Bullish X-JATC",
-        "Bearish X- ATC",
-        "Bullish X-CH",
-        "Bearish X-CH",
-        "Bullish X-HJC"
-      ]
-    },
-    {
-      "label": "SMA2",
-      "color": "red",
-      "options": [
-        "SMA2 piatta",
-        "SMA2 piatta con cambio direzione da salita.",
-        "SMA2 piatta con cambio direzione da discesa.",
-        "SMA2 in salita.",
-        "SMA2 in salita con cambio direzione da discesa.",
-        "SMA2 in salita con cambio direzione da piatta.",
-        "SMA2 in salita con rafforzamento.",
-        "SMA2 in salita con indebolimento.",
-        "SMA2 in discesa.",
-        "SMA2 in discesa con rafforzamento.",
-        "SMA2 in discesa con indebolimento.",
-        "SMA2 in discesa con cambio direzione da salita.",
-        "SMA2 in discesa con cambio direzione da piatta."
-      ]
-    },
-    {
-      "label": "SMA3",
-      "color": "lime",
-      "options": [
-        "SMA3 piatta",
-        "SMA3 piatta con cambio direzione da salita.",
-        "SMA3 piatta con cambio direzione da discesa.",
-        "SMA3 in salita.",
-        "SMA3 in salita con cambio direzione da discesa.",
-        "SMA3 in salita con cambio direzione da piatta.",
-        "SMA3 in salita con rafforzamento.",
-        "SMA3 in salita con indebolimento.",
-        "SMA3 in discesa.",
-        "SMA3 in discesa con rafforzamento.",
-        "SMA3 in discesa con indebolimento.",
-        "SMA3 in discesa con cambio direzione da salita.",
-        "SMA3 in discesa con cambio direzione da piatta."
-      ]
-    },
-    {
-      "label": "Distanza",
-      "options": [
-        "Convergenti",
-        "Divergenti",
-        "Parallele"
-      ]
-    }
-  ],
-  "stochastic_rsi_groups": [
-    {
-      "label": "Status",
-      "options": [
-        "Bullish",
-        "Bearish",
-        "Bullish HH",
-        "Bearish HH"
-      ]
-    },
-    {
-      "label": "Separation",
-      "options": [
-        "Bullish SEP",
-        "Bearish SEP",
-        "Bullish SEP + X",
-        "Bearish SEP + X"
-      ]
-    },
-    {
-      "label": "Windshield Effect",
-      "options": [
-        "Bullish WS",
-        "Bearish WS"
-      ]
-    },
-    {
-      "label": "Crossover",
-      "options": [
-        "Bullish X-over",
-        "Bearish X-over",
-        "Bullish X-JATC",
-        "Bearish X- ATC",
-        "Bullish X-CH",
-        "Bearish X-CH",
-        "Bullish X-HJC"
-      ]
-    },
-    {
-      "label": "K",
-      "color": "red",
-      "options": [
-        "K piatta",
-        "K piatta con cambio direzione da salita.",
-        "K piatta con cambio direzione da discesa.",
-        "K in salita.",
-        "K in salita con cambio direzione da discesa.",
-        "K in salita con cambio direzione da piatta.",
-        "K in salita con rafforzamento.",
-        "K in salita con indebolimento.",
-        "K in discesa.",
-        "K in discesa con rafforzamento.",
-        "K in discesa con indebolimento",
-        "K in discesa con cambio direzione da salita.",
-        "K in discesa con cambio direzione da piatta."
-      ]
-    },
-    {
-      "label": "D",
-      "color": "lime",
-      "options": [
-        "D piatta",
-        "D piatta con cambio direzione da salita.",
-        "D piatta con cambio direzione da discesa.",
-        "D in salita.",
-        "D in salita con cambio direzione da discesa.",
-        "D in salita con cambio direzione da piatta.",
-        "D in salita con rafforzamento.",
-        "D in salita con indebolimento.",
-        "D in discesa.",
-        "D in discesa con rafforzamento.",
-        "D in discesa con indebolimento",
-        "D in discesa con cambio direzione da salita.",
-        "D in discesa con cambio direzione da piatta."
-      ]
-    },
-    {
-      "label": "Distanza",
-      "options": [
-        "Convergenti",
-        "Divergenti",
-        "Parallele"
-      ]
-    },
-    {
-      "label": "Livelli",
-      "options": [
-        "Sotto 20",
-        "Tra 20 e 50",
-        "Tra 50 e 80",
-        "Sopra 80",
-        "K sopra 80",
-        "K tra 50 e 80",
-        "K tra 20 e 50",
-        "K sotto 20",
-        "D sopra 80",
-        "D tra 50 e 80",
-        "D tra 20 e 50",
-        "D sotto 20",
-        "K ha raggiunto 100",
-        "K ha raggiunto 0",
-        "K ha lasciato 100",
-        "K ha lasciato 0",
-        "K piatto a 100",
-        "K piatto a 0",
-        "D ha raggiunto 100",
-        "D ha raggiunto 0",
-        "D ha lasciato 100",
-        "D ha lasciato 0",
-        "D piatto a 100",
-        "D piatto a 0"
-      ]
-    }
-  ],
-  "macd_groups": [
-    {
-      "label": "Status",
-      "options": [
-        "Bullish",
-        "Bearish",
-        "Bullish HH",
-        "Bearish HH"
-      ]
-    },
-    {
-      "label": "Separation",
-      "options": [
-        "Bullish SEP",
-        "Bearish SEP",
-        "Bullish SEP + X",
-        "Bearish SEP + X"
-      ]
-    },
-    {
-      "label": "Windshield Effect",
-      "options": [
-        "Bullish WS",
-        "Bearish WS"
-      ]
-    },
-    {
-      "label": "Crossover",
-      "options": [
-        "Bullish X-over",
-        "Bearish X-over",
-        "Bullish X-JATC",
-        "Bearish X- ATC",
-        "Bullish X-CH",
-        "Bearish X-CH",
-        "Bullish X-HJC"
-      ]
-    },
-    {
-      "label": "MACD",
-      "color": "red",
-      "options": [
-        "MACD piatta",
-        "MACD piatta con cambio direzione da salita.",
-        "MACD piatta con cambio direzione da discesa.",
-        "MACD in salita.",
-        "MACD in salita con cambio direzione da discesa.",
-        "MACD in salita con cambio direzione da piatta.",
-        "MACD in salita con rafforzamento.",
-        "MACD in salita con indebolimento.",
-        "MACD in discesa.",
-        "MACD in discesa con rafforzamento.",
-        "MACD in discesa con indebolimento.",
-        "MACD in discesa con cambio direzione da salita.",
-        "MACD in discesa con cambio direzione da piatta."
-      ]
-    },
-    {
-      "label": "Signal",
-      "color": "lime",
-      "options": [
-        "Signal piatta",
-        "Signal piatta con cambio direzione da salita.",
-        "Signal piatta con cambio direzione da discesa.",
-        "Signal in salita.",
-        "Signal in salita con cambio direzione da discesa.",
-        "Signal in salita con cambio direzione da piatta.",
-        "Signal in salita con rafforzamento.",
-        "Signal in salita con indebolimento.",
-        "Signal in discesa.",
-        "Signal in discesa con rafforzamento.",
-        "Signal in discesa con indebolimento.",
-        "Signal in discesa con cambio direzione da salita.",
-        "Signal in discesa con cambio direzione da piatta."
-      ]
-    },
-    {
-      "label": "Distanza",
-      "options": [
-        "Convergenti",
-        "Divergenti",
-        "Parallele"
-      ]
-    },
-    {
-      "label": "Histo",
-      "options": [
-        "Histo positivo",
-        "Histo negativo",
-        "Histo a zero",
-        "Histo in salita",
-        "Histo in discesa",
-        "Histo piatto",
-        "Histo positivo – Reversal da discesa",
-        "Histo positivo – Reversal da salita.",
-        "Histo negativo – Reversal da discesa.",
-        "Histo negativo – Reversal da salita."
-      ]
-    },
-    {
-      "label": "Histo Livelli",
-      "options": [
-        "Histo a UYL",
-        "Histo a UPL",
-        "Histo a UOL",
-        "Histo a LOL",
-        "Histo a LPL",
-        "Histo a LYL",
-        "Histo sopra UYL",
-        "Histo sotto LYL",
-        "Histo tra zero e UOL",
-        "Histo tra UOL e UPL",
-        "Histo tra UPL e UYL",
-        "Histo tra zero e LOL",
-        "Histo tra LOL e LPL",
-        "Histo tra LPL e LYL"
-      ]
-    }
-  ],
-  "dm_adx_groups": [
-    {
-      "label": "Status",
-      "options": [
-        "Bullish",
-        "Bearish",
-        "Bullish HH",
-        "Bearish HH"
-      ]
-    },
-    {
-      "label": "Separation",
-      "options": [
-        "Bullish SEP",
-        "Bearish SEP",
-        "Bullish SEP + X",
-        "Bearish SEP + X"
-      ]
-    },
-    {
-      "label": "Windshield Effect",
-      "options": [
-        "Bullish WS",
-        "Bearish WS"
-      ]
-    },
-    {
-      "label": "Crossover",
-      "options": [
-        "Bullish X-over",
-        "Bearish X-over",
-        "Bullish X-JATC",
-        "Bearish X- ATC",
-        "Bullish X-CH",
-        "Bearish X-CH",
-        "Bullish X-HJC"
-      ]
-    },
-    {
-      "label": "PDI",
-      "color": "red",
-      "options": [
-        "PDI piatta",
-        "PDI piatta con cambio direzione da salita.",
-        "PDI piatta con cambio direzione da discesa.",
-        "PDI in salita.",
-        "PDI in salita con cambio direzione da discesa.",
-        "PDI in salita con cambio direzione da piatta.",
-        "PDI in salita con rafforzamento.",
-        "PDI in salita con indebolimento.",
-        "PDI in discesa.",
-        "PDI in discesa con rafforzamento.",
-        "PDI in discesa con indebolimento.",
-        "PDI in discesa con cambio direzione da salita.",
-        "PDI in discesa con cambio direzione da piatta."
-      ]
-    },
-    {
-      "label": "MDI",
-      "color": "lime",
-      "options": [
-        "MDI piatta",
-        "MDI piatta con cambio direzione da salita.",
-        "MDI piatta con cambio direzione da discesa.",
-        "MDI in salita.",
-        "MDI in salita con cambio direzione da discesa.",
-        "MDI in salita con cambio direzione da piatta.",
-        "MDI in salita con rafforzamento.",
-        "MDI in salita con indebolimento.",
-        "MDI in discesa.",
-        "MDI in discesa con rafforzamento.",
-        "MDI in discesa con indebolimento.",
-        "MDI in discesa con cambio direzione da salita.",
-        "MDI in discesa con cambio direzione da piatta."
-      ]
-    },
-    {
-      "label": "Distanza",
-      "options": [
-        "Convergenti",
-        "Divergenti",
-        "Parallele"
-      ]
-    },
-    {
-      "label": "LPL",
-      "color": "violet",
-      "options": [
-        "PDI TF",
-        "PDI +TF",
-        "PDI CTF",
-        "MDI TF",
-        "MDI +TF",
-        "MDI CTF"
-      ]
-    },
-    {
-      "label": "ADX",
-      "color": "yellow",
-      "options": [
-        "ADX piatta",
-        "ADX piatta con cambio direzione da salita.",
-        "ADX piatta con cambio direzione da discesa.",
-        "ADX in salita.",
-        "ADX in salita con cambio direzione da discesa.",
-        "ADX in salita con cambio direzione da piatta.",
-        "ADX in salita con rafforzamento.",
-        "ADX in salita con indebolimento.",
-        "ADX in discesa.",
-        "ADX in discesa con rafforzamento.",
-        "ADX in discesa con indebolimento.",
-        "ADX in discesa con cambio direzione da salita.",
-        "ADX in discesa con cambio direzione da piatta."
-      ]
-    }
-  ],
-  "space_items": [
-    "TBB",
-    "BBB",
-    "SMA3",
-    "SMA13",
-    "SMA21",
-    "SMA34",
-    "SMA55",
-    "SMA89",
-    "SMA144",
-    "SMA233",
-    "SMA377",
-    "SMA610",
-    "SMA987"
-  ],
-  "space_directions": [
-    "In salita",
-    "In discesa",
-    "Piatta"
-  ],
-  "space_types": [
-    "Soft",
-    "Hard"
-  ]
-};
-    const indicatorDefs = [
-      { key: 'christmasCross', label: 'Christmas Cross', configKey: 'christmas_cross_groups' },
-      { key: 'stochasticRsi', label: 'Stochastic RSI', configKey: 'stochastic_rsi_groups' },
-      { key: 'macd', label: 'MACD', configKey: 'macd_groups' },
-      { key: 'dmAdx', label: 'DM + ADX', configKey: 'dm_adx_groups' }
-    ];
-    let config = deepCopy(defaultConfig);
-    const reportModes = ['Backwork', 'Live'];
-    const candleStates = ['Aperta', 'Chiusa'];
-    const candleOpenDayTimeframes = new Set(['M', '8D', 'W', '3D']);
-    const marketSliIndices = ['SP500', 'COMPQ', 'INDU', 'RUT', 'SPXEW', 'VIX', 'VVIX'];
-    const marketSliChoices = ['SI', 'NO'];
-    const state = { title: { ticker: 'SPX', date: '', direction: 'UP', mode: 'Backwork' }, commonClose: '', marketSli: {}, sma21: {}, candles: {}, indicators: {}, space: {} };
-    const tickerInput = document.getElementById('ticker');
-    const dateInput = document.getElementById('report-date');
-    const directionSelect = document.getElementById('direction');
-    const reportModeSelect = document.getElementById('report-mode');
-    const globalCloseInput = document.getElementById('global-close');
-    const marketSliEditor = document.getElementById('market-sli-editor');
-    const smaEditor = document.getElementById('sma-editor');
-    const candlesEditor = document.getElementById('candles-editor');
-    const indicatorsEditor = document.getElementById('indicators-editor');
-    const printReport = document.getElementById('print-report');
-    const configStatus = document.getElementById('config-status');
-    const configFileInput = document.getElementById('config-file');
-
-    function deepCopy(obj) { return JSON.parse(JSON.stringify(obj)); }
-    function stripYamlValue(value) {
-      const trimmed = String(value ?? '').trim();
-      if ((trimmed.startsWith('"') && trimmed.endsWith('"')) || (trimmed.startsWith("'") && trimmed.endsWith("'"))) {
-        return trimmed.slice(1, -1).replace(/\\"/g, '"');
-      }
-      return trimmed;
-    }
-    function leadingSpaces(value) { return (value.match(/^\s*/) || [''])[0].length; }
-    function parseConfigText(text) {
-      const trimmed = text.trim();
-      if (!trimmed) throw new Error('File vuoto.');
-      if (trimmed.startsWith('{')) return JSON.parse(trimmed);
-      return parseLimitedYaml(trimmed);
-    }
-    function parseLimitedYaml(text) {
-      const lines = text.replace(/\t/g, '  ').split(/\r?\n/);
-      const result = {};
-      const keyOnly = /^([A-Za-z0-9_]+):\s*$/;
-      const keyValue = /^([A-Za-z0-9_]+):\s*(.+?)\s*$/;
-      let i = 0;
-      while (i < lines.length) {
-        let raw = lines[i];
-        let trimmed = raw.trim();
-        if (!trimmed || trimmed.startsWith('#')) { i += 1; continue; }
-        const topMatch = trimmed.match(keyOnly);
-        if (!topMatch) throw new Error(`Riga YAML non valida: ${trimmed}`);
-        const topKey = topMatch[1];
-        const items = [];
-        i += 1;
-        while (i < lines.length) {
-          raw = lines[i];
-          trimmed = raw.trim();
-          if (!trimmed || trimmed.startsWith('#')) { i += 1; continue; }
-          if (!trimmed.startsWith('- ')) {
-            if (leadingSpaces(raw) === 0 && keyOnly.test(trimmed)) break;
-            throw new Error(`Atteso elemento lista sotto ${topKey}: ${trimmed}`);
-          }
-          if (leadingSpaces(raw) !== 0) throw new Error(`Indentazione non valida sotto ${topKey}: ${trimmed}`);
-          const payload = trimmed.slice(2).trim();
-          if (!payload.includes(':')) {
-            items.push(stripYamlValue(payload));
-            i += 1;
-            continue;
-          }
-          const pair = payload.match(keyValue);
-          if (!pair) throw new Error(`Oggetto YAML non valido: ${trimmed}`);
-          const obj = { [pair[1]]: stripYamlValue(pair[2]) };
-          i += 1;
-          while (i < lines.length) {
-            raw = lines[i];
-            trimmed = raw.trim();
-            if (!trimmed || trimmed.startsWith('#')) { i += 1; continue; }
-            const nestedIndent = leadingSpaces(raw);
-            if (nestedIndent === 0) break;
-            const nestedKeyOnly = trimmed.match(keyOnly);
-            const nestedPair = trimmed.match(keyValue);
-            if (nestedIndent === 2 && nestedPair) {
-              obj[nestedPair[1]] = stripYamlValue(nestedPair[2]);
-              i += 1;
-              continue;
-            }
-            if (nestedIndent === 2 && nestedKeyOnly) {
-              const nestedKey = nestedKeyOnly[1];
-              obj[nestedKey] = [];
-              i += 1;
-              while (i < lines.length) {
-                raw = lines[i];
-                trimmed = raw.trim();
-                if (!trimmed || trimmed.startsWith('#')) { i += 1; continue; }
-                const arrIndent = leadingSpaces(raw);
-                if (arrIndent < 2) break;
-                if (arrIndent !== 2 || !trimmed.startsWith('- ')) throw new Error(`Atteso elemento lista in ${nestedKey}: ${trimmed}`);
-                obj[nestedKey].push(stripYamlValue(trimmed.slice(2)));
-                i += 1;
-              }
-              continue;
-            }
-            throw new Error(`Struttura YAML non supportata: ${trimmed}`);
-          }
-          items.push(obj);
-        }
-        result[topKey] = items;
-      }
-      return result;
-    }
-    function isGroupArray(value) {
-      return Array.isArray(value) && value.length > 0 && value.every(group => group && typeof group === 'object' && typeof group.label === 'string' && Array.isArray(group.options));
-    }
-    function isValidConfig(candidate) {
-      const flatRequired = ['timeframes','indicator_timeframes','directions','sma21_states','candlestick_patterns','candlestick_attributes','space_items','space_directions','space_types'];
-      const groupedRequired = ['christmas_cross_groups','stochastic_rsi_groups','macd_groups','dm_adx_groups'];
-      return flatRequired.every(key => Array.isArray(candidate[key]) && candidate[key].length > 0)
-        && groupedRequired.every(key => isGroupArray(candidate[key]));
-    }
-    function getIndicatorGroups(def) { return Array.isArray(config[def.configKey]) ? config[def.configKey] : []; }
-    function getIndicatorOptions(def) { return getIndicatorGroups(def).flatMap(group => Array.isArray(group.options) ? group.options : []); }
-    function getOrderedSelected(tf, def) {
-      const selected = new Set(Array.isArray(state.indicators?.[tf]?.[def.key]) ? state.indicators[tf][def.key] : []);
-      return getIndicatorOptions(def).filter(option => selected.has(option));
-    }
-    function parseNumber(value) {
-      if (value === null || value === undefined || value === '') return null;
-      const normalized = String(value).replace(',', '.').replace(/\$/g, '').trim();
-      const num = Number.parseFloat(normalized);
-      return Number.isFinite(num) ? num : null;
-    }
-    function formatMoney(value) {
-      const num = parseNumber(value);
-      return num === null ? '—' : `${num.toFixed(2)}$`;
-    }
-    function formatSignedMoney(value) {
-      const num = parseNumber(value);
-      if (num === null) return '—';
-      const sign = num > 0 ? '+' : '';
-      return `${sign}${num.toFixed(2)}$`;
-    }
-    function calculateGap(closeValue, levelValue) {
-      const closeNum = parseNumber(closeValue);
-      const levelNum = parseNumber(levelValue);
-      if (closeNum === null || levelNum === null) return null;
-      return levelNum - closeNum;
-    }
-    function gapClass(value) {
-      if (value === null) return '';
-      if (value < 0) return 'gap-negative';
-      if (value > 0) return 'gap-positive';
-      return '';
-    }
-    function sanitizeCssToken(value) {
-      return String(value).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
-    }
-    function renderSpaceItemToken(item) {
-      const safeLabel = escapeHtml(item);
-      return `<span class="item-token item-token-${sanitizeCssToken(item)}">${safeLabel}</span>`;
-    }
-    function renderTypeToken(type) {
-      if (!type) return '<span class="dash">—</span>';
-      const cls = type === 'Hard' ? 'type-hard' : type === 'Soft' ? 'type-soft' : '';
-      return cls ? `<span class="${cls}">${escapeHtml(type)}</span>` : escapeHtml(type);
-    }
-    function getSpaceEntry(tf, item) {
-      return state.space?.[tf]?.items?.[item] || { selected: false, level: '', direction: '', type: '' };
-    }
-    function normalizeState() {
-      if (typeof state.commonClose !== 'string' && typeof state.commonClose !== 'number') state.commonClose = '';
-      if (!state.marketSli || typeof state.marketSli !== 'object') state.marketSli = {};
-      marketSliIndices.forEach(index => {
-        if (!marketSliChoices.includes(state.marketSli[index])) state.marketSli[index] = '';
-      });
-      Object.keys(state.marketSli).forEach(index => { if (!marketSliIndices.includes(index)) delete state.marketSli[index]; });
-      for (const tf of config.timeframes) {
-        if (!(tf in state.sma21)) state.sma21[tf] = '';
-        if (!(tf in state.candles)) state.candles[tf] = { pattern: '', attributes: [], status: '', daysOpen: '' };
-        if (!config.candlestick_patterns.includes(state.candles[tf].pattern)) {
-          state.candles[tf].pattern = '';
-          state.candles[tf].attributes = [];
-          state.candles[tf].status = '';
-          state.candles[tf].daysOpen = '';
-        }
-        state.candles[tf].attributes = (state.candles[tf].attributes || []).filter(attr => config.candlestick_attributes.includes(attr));
-        if (!candleStates.includes(state.candles[tf].status)) state.candles[tf].status = '';
-        const normalizedDays = Number.parseInt(state.candles[tf].daysOpen, 10);
-        state.candles[tf].daysOpen = candleOpenDayTimeframes.has(tf) && Number.isInteger(normalizedDays) && normalizedDays >= 1 && normalizedDays <= 31
-          ? String(normalizedDays)
-          : '';
-        if (state.candles[tf].status !== 'Aperta') state.candles[tf].daysOpen = '';
-      }
-      for (const tf of config.indicator_timeframes) {
-        if (!(tf in state.indicators)) state.indicators[tf] = {};
-        if (!(tf in state.space)) state.space[tf] = { items: {} };
-        indicatorDefs.forEach(def => {
-          const allowed = new Set(getIndicatorOptions(def));
-          const current = Array.isArray(state.indicators[tf][def.key]) ? state.indicators[tf][def.key] : [];
-          state.indicators[tf][def.key] = getIndicatorOptions(def).filter(item => allowed.has(item) && current.includes(item));
-        });
-        const cleanItems = {};
-        config.space_items.forEach(item => {
-          const current = state.space[tf].items?.[item] || {};
-          cleanItems[item] = {
-            selected: Boolean(current.selected),
-            level: current.level ?? '',
-            direction: config.space_directions.includes(current.direction) ? current.direction : '',
-            type: config.space_types.includes(current.type) ? current.type : ''
-          };
-        });
-        state.space[tf].items = cleanItems;
-      }
-      Object.keys(state.sma21).forEach(tf => { if (!config.timeframes.includes(tf)) delete state.sma21[tf]; });
-      Object.keys(state.candles).forEach(tf => { if (!config.timeframes.includes(tf)) delete state.candles[tf]; });
-      Object.keys(state.indicators).forEach(tf => { if (!config.indicator_timeframes.includes(tf)) delete state.indicators[tf]; });
-      Object.keys(state.space).forEach(tf => { if (!config.indicator_timeframes.includes(tf)) delete state.space[tf]; });
-      if (!config.directions.includes(state.title.direction)) state.title.direction = config.directions[0] || 'UP';
-      if (!reportModes.includes(state.title.mode)) state.title.mode = reportModes[0];
-    }
-    function formatDate(dateValue) {
-      if (!dateValue) return '--/--/----';
-      const [yyyy, mm, dd] = dateValue.split('-');
-      return `${dd}/${mm}/${yyyy}`;
-    }
-    function composeTitle() {
-      const ticker = (state.title.ticker || 'TICKER').trim().toUpperCase();
-      const mode = state.title.mode || reportModes[0];
-      return `${ticker} ${formatDate(state.title.date)} ${state.title.direction || 'UP'} ${mode}`;
-    }
-    function escapeHtml(value) {
-      return String(value).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'",'&#039;');
-    }
-    function populateDirectionOptions() {
-      directionSelect.innerHTML = '';
-      config.directions.forEach(dir => {
-        const option = document.createElement('option');
-        option.value = dir;
-        option.textContent = dir;
-        if (dir === state.title.direction) option.selected = true;
-        directionSelect.appendChild(option);
-      });
-    }
-    function populateReportModeOptions() {
-      reportModeSelect.innerHTML = '';
-      reportModes.forEach(mode => {
-        const option = document.createElement('option');
-        option.value = mode;
-        option.textContent = mode;
-        if (mode === state.title.mode) option.selected = true;
-        reportModeSelect.appendChild(option);
-      });
-    }
-    function buildMarketSliEditor() {
-      const table = document.createElement('table');
-      table.className = 'editor-table';
-      table.innerHTML = `<thead><tr><th style="width:180px;">Indice</th><th style="width:120px;">Selezione</th></tr></thead><tbody></tbody>`;
-      const tbody = table.querySelector('tbody');
-      marketSliIndices.forEach(index => {
-        const tr = document.createElement('tr');
-        const indexCell = document.createElement('td');
-        indexCell.textContent = index;
-        const valueCell = document.createElement('td');
-        const select = document.createElement('select');
-        const empty = document.createElement('option');
-        empty.value = '';
-        empty.textContent = '—';
-        select.appendChild(empty);
-        marketSliChoices.forEach(value => {
-          const opt = document.createElement('option');
-          opt.value = value;
-          opt.textContent = value;
-          opt.selected = state.marketSli[index] === value;
-          select.appendChild(opt);
-        });
-        select.addEventListener('change', () => { state.marketSli[index] = select.value; renderPreview(); });
-        valueCell.appendChild(select);
-        tr.appendChild(indexCell);
-        tr.appendChild(valueCell);
-        tbody.appendChild(tr);
-      });
-      marketSliEditor.innerHTML = '';
-      marketSliEditor.appendChild(table);
-    }
-    function buildSmaEditor() {
-      const table = document.createElement('table');
-      table.className = 'editor-table candles-table';
-      table.innerHTML = `<thead><tr><th style="width:62px;">TF</th><th>Stato</th></tr></thead><tbody></tbody>`;
-      const tbody = table.querySelector('tbody');
-      config.timeframes.forEach(tf => {
-        const tr = document.createElement('tr');
-        const tfCell = document.createElement('td');
-        tfCell.className = 'tf-cell';
-        tfCell.textContent = tf;
-        const stateCell = document.createElement('td');
-        const select = document.createElement('select');
-        const empty = document.createElement('option');
-        empty.value = '';
-        empty.textContent = '—';
-        select.appendChild(empty);
-        config.sma21_states.forEach(value => {
-          const opt = document.createElement('option');
-          opt.value = value;
-          opt.textContent = value;
-          opt.selected = state.sma21[tf] === value;
-          select.appendChild(opt);
-        });
-        select.addEventListener('change', () => { state.sma21[tf] = select.value; renderPreview(); });
-        stateCell.appendChild(select);
-        tr.appendChild(tfCell);
-        tr.appendChild(stateCell);
-        tbody.appendChild(tr);
-      });
-      smaEditor.innerHTML = '';
-      smaEditor.appendChild(table);
-    }
-    function buildCandlesEditor() {
-      const table = document.createElement('table');
-      table.className = 'editor-table';
-      table.innerHTML = `<thead><tr><th style="width:62px;">TF</th><th style="width:28%;">Pattern</th><th>Caratteristiche</th><th style="width:140px;">Stato</th><th style="width:120px;">Giorni</th></tr></thead><tbody></tbody>`;
-      const tbody = table.querySelector('tbody');
-      config.timeframes.forEach(tf => {
-        const tr = document.createElement('tr');
-        const tfCell = document.createElement('td');
-        tfCell.className = 'tf-cell';
-        tfCell.textContent = tf;
-
-        const patternCell = document.createElement('td');
-        const patternSelect = document.createElement('select');
-        const empty = document.createElement('option');
-        empty.value = '';
-        empty.textContent = '—';
-        patternSelect.appendChild(empty);
-        config.candlestick_patterns.forEach(pattern => {
-          const opt = document.createElement('option');
-          opt.value = pattern;
-          opt.textContent = pattern;
-          opt.selected = state.candles[tf].pattern === pattern;
-          patternSelect.appendChild(opt);
-        });
-
-        const attrCell = document.createElement('td');
-        const attrWrap = document.createElement('div');
-        attrWrap.className = 'attr-wrap';
-        const checkboxes = [];
-        config.candlestick_attributes.forEach(attr => {
-          const label = document.createElement('label');
-          label.className = 'check';
-          const input = document.createElement('input');
-          input.type = 'checkbox';
-          input.checked = state.candles[tf].attributes.includes(attr);
-          input.addEventListener('change', () => {
-            const selected = new Set(state.candles[tf].attributes);
-            if (input.checked) selected.add(attr); else selected.delete(attr);
-            state.candles[tf].attributes = config.candlestick_attributes.filter(item => selected.has(item));
-            renderPreview();
-          });
-          checkboxes.push(input);
-          label.appendChild(input);
-          label.appendChild(document.createTextNode(attr));
-          attrWrap.appendChild(label);
-        });
-
-        const statusCell = document.createElement('td');
-        const statusSelect = document.createElement('select');
-        const statusEmpty = document.createElement('option');
-        statusEmpty.value = '';
-        statusEmpty.textContent = '—';
-        statusSelect.appendChild(statusEmpty);
-        candleStates.forEach(value => {
-          const opt = document.createElement('option');
-          opt.value = value;
-          opt.textContent = value;
-          opt.selected = state.candles[tf].status === value;
-          statusSelect.appendChild(opt);
-        });
-        statusCell.appendChild(statusSelect);
-
-        const daysCell = document.createElement('td');
-        const daysSelect = document.createElement('select');
-        const daysEmpty = document.createElement('option');
-        daysEmpty.value = '';
-        daysEmpty.textContent = '—';
-        daysSelect.appendChild(daysEmpty);
-        for (let day = 1; day <= 31; day += 1) {
-          const opt = document.createElement('option');
-          opt.value = String(day);
-          opt.textContent = String(day);
-          opt.selected = state.candles[tf].daysOpen === String(day);
-          daysSelect.appendChild(opt);
-        }
-        daysCell.appendChild(daysSelect);
-
-        function syncDisabled() {
-          const hasPattern = Boolean(patternSelect.value);
-          const canUseDays = hasPattern && statusSelect.value === 'Aperta' && candleOpenDayTimeframes.has(tf);
-          checkboxes.forEach(cb => cb.disabled = !hasPattern);
-          statusSelect.disabled = !hasPattern;
-          daysSelect.disabled = !canUseDays;
-          if (!hasPattern) {
-            state.candles[tf].attributes = [];
-            state.candles[tf].status = '';
-            state.candles[tf].daysOpen = '';
-            checkboxes.forEach(cb => { cb.checked = false; });
-            statusSelect.value = '';
-            daysSelect.value = '';
-          }
-          if (statusSelect.value !== 'Aperta') {
-            state.candles[tf].daysOpen = '';
-            daysSelect.value = '';
-          }
-          if (!candleOpenDayTimeframes.has(tf)) {
-            state.candles[tf].daysOpen = '';
-            daysSelect.value = '';
-          }
-        }
-
-        patternSelect.addEventListener('change', () => {
-          state.candles[tf].pattern = patternSelect.value;
-          syncDisabled();
-          renderPreview();
-        });
-        statusSelect.addEventListener('change', () => {
-          state.candles[tf].status = statusSelect.value;
-          syncDisabled();
-          renderPreview();
-        });
-        daysSelect.addEventListener('change', () => {
-          state.candles[tf].daysOpen = daysSelect.value;
-          renderPreview();
-        });
-        syncDisabled();
-
-        patternCell.appendChild(patternSelect);
-        attrCell.appendChild(attrWrap);
-        tr.appendChild(tfCell);
-        tr.appendChild(patternCell);
-        tr.appendChild(attrCell);
-        tr.appendChild(statusCell);
-        tr.appendChild(daysCell);
-        tbody.appendChild(tr);
-      });
-      const scrollWrap = document.createElement('div');
-      scrollWrap.className = 'table-scroll';
-      scrollWrap.appendChild(table);
-      candlesEditor.innerHTML = '';
-      candlesEditor.appendChild(scrollWrap);
-    }
-    function renderIndicatorOptions(tf, def, chipsWrap, countNode) {
-      chipsWrap.innerHTML = '';
-      const selected = getOrderedSelected(tf, def);
-      if (!selected.length) {
-        const empty = document.createElement('span');
-        empty.className = 'chip';
-        empty.textContent = 'Nessuna selezione';
-        chipsWrap.appendChild(empty);
-      } else {
-        selected.forEach(value => {
-          const chip = document.createElement('span');
-          chip.className = 'chip';
-          chip.textContent = value;
-          chipsWrap.appendChild(chip);
-        });
-      }
-      countNode.textContent = `${selected.length} selezionate`;
-    }
-    function buildSpaceEditorSection(tf) {
-      const wrap = document.createElement('div');
-      wrap.className = 'card-section';
-      wrap.innerHTML = `<h4 class="card-section-title">Spazio</h4>`;
-      const note = document.createElement('div');
-      note.className = 'space-note';
-      note.textContent = 'Gap = Livello - Close comune. In stampa gli item selezionati verranno aggregati e ordinati dalla distanza minore alla maggiore rispetto alla close comune.';
-      wrap.appendChild(note);
-
-      const table = document.createElement('table');
-      table.className = 'space-table';
-      table.innerHTML = `<thead><tr><th>Use</th><th>Item</th><th>Livello</th><th>Gap</th><th>Direzione</th><th>Tipo</th></tr></thead><tbody></tbody>`;
-      const tbody = table.querySelector('tbody');
-      const rowUpdaters = [];
-      function refreshGaps() { rowUpdaters.forEach(fn => fn()); renderPreview(); }
-      config.space_items.forEach(item => {
-        const entry = getSpaceEntry(tf, item);
-        const tr = document.createElement('tr');
-        const useCell = document.createElement('td');
-        useCell.style.textAlign = 'center';
-        const useInput = document.createElement('input');
-        useInput.type = 'checkbox';
-        useInput.checked = entry.selected;
-        useCell.appendChild(useInput);
-
-        const itemCell = document.createElement('td');
-        itemCell.textContent = item;
-
-        const levelCell = document.createElement('td');
-        const levelInput = document.createElement('input');
-        levelInput.type = 'number';
-        levelInput.step = '0.01';
-        levelInput.placeholder = 'XXXX.XX';
-        levelInput.value = entry.level;
-        levelCell.appendChild(levelInput);
-
-        const gapCell = document.createElement('td');
-        gapCell.className = 'space-gap';
-
-        const dirCell = document.createElement('td');
-        const dirSelect = document.createElement('select');
-        const dirEmpty = document.createElement('option');
-        dirEmpty.value = '';
-        dirEmpty.textContent = '—';
-        dirSelect.appendChild(dirEmpty);
-        config.space_directions.forEach(value => {
-          const opt = document.createElement('option');
-          opt.value = value;
-          opt.textContent = value;
-          opt.selected = entry.direction === value;
-          dirSelect.appendChild(opt);
-        });
-        dirCell.appendChild(dirSelect);
-
-        const typeCell = document.createElement('td');
-        const typeSelect = document.createElement('select');
-        const typeEmpty = document.createElement('option');
-        typeEmpty.value = '';
-        typeEmpty.textContent = '—';
-        typeSelect.appendChild(typeEmpty);
-        config.space_types.forEach(value => {
-          const opt = document.createElement('option');
-          opt.value = value;
-          opt.textContent = value;
-          opt.selected = entry.type === value;
-          typeSelect.appendChild(opt);
-        });
-        typeCell.appendChild(typeSelect);
-
-        function syncRow() {
-          const enabled = useInput.checked;
-          tr.classList.toggle('space-row-off', !enabled);
-          levelInput.disabled = !enabled;
-          dirSelect.disabled = !enabled;
-          typeSelect.disabled = !enabled;
-          const gap = enabled ? calculateGap(state.commonClose, levelInput.value) : null;
-          gapCell.innerHTML = gap === null ? '—' : `<span class="${gapClass(gap)}">${formatSignedMoney(gap)}</span>`;
-          state.space[tf].items[item] = {
-            selected: enabled,
-            level: levelInput.value,
-            direction: dirSelect.value,
-            type: typeSelect.value
-          };
-        }
-        rowUpdaters.push(syncRow);
-        useInput.addEventListener('change', () => { syncRow(); renderPreview(); });
-        levelInput.addEventListener('input', () => { syncRow(); renderPreview(); });
-        dirSelect.addEventListener('change', () => { syncRow(); renderPreview(); });
-        typeSelect.addEventListener('change', () => { syncRow(); renderPreview(); });
-        syncRow();
-
-        tr.appendChild(useCell);
-        tr.appendChild(itemCell);
-        tr.appendChild(levelCell);
-        tr.appendChild(gapCell);
-        tr.appendChild(dirCell);
-        tr.appendChild(typeCell);
-        tbody.appendChild(tr);
-      });
-      const scrollWrap = document.createElement('div');
-      scrollWrap.className = 'table-scroll';
-      scrollWrap.appendChild(table);
-      wrap.refreshGaps = refreshGaps;
-      wrap.appendChild(scrollWrap);
-      return wrap;
-    }
-    function buildIndicatorsEditor() {
-      indicatorsEditor.innerHTML = '';
-      config.indicator_timeframes.forEach(tf => {
-        const card = document.createElement('div');
-        card.className = 'indicator-card';
-        const header = document.createElement('div');
-        header.className = 'indicator-card-header';
-        header.innerHTML = `<div class="indicator-card-title">${escapeHtml(tf)}</div>`;
-        card.appendChild(header);
-
-        const indicatorsSection = document.createElement('div');
-        indicatorsSection.className = 'card-section';
-        indicatorsSection.innerHTML = `<h4 class="card-section-title">Indicatori</h4>`;
-        const grid = document.createElement('div');
-        grid.className = 'indicator-grid';
-
-        indicatorDefs.forEach(def => {
-          const box = document.createElement('div');
-          box.className = 'indicator-box';
-          const boxHeader = document.createElement('div');
-          boxHeader.className = 'indicator-box-header';
-          const name = document.createElement('div');
-          name.className = 'indicator-name';
-          name.textContent = def.label;
-          const rightWrap = document.createElement('div');
-          rightWrap.style.display = 'flex';
-          rightWrap.style.alignItems = 'center';
-          rightWrap.style.gap = '8px';
-          const count = document.createElement('div');
-          count.className = 'indicator-meta';
-          const clearBtn = document.createElement('button');
-          clearBtn.type = 'button';
-          clearBtn.className = 'btn btn-inline';
-          clearBtn.textContent = 'Pulisci';
-          clearBtn.addEventListener('click', () => {
-            state.indicators[tf][def.key] = [];
-            buildIndicatorsEditor();
-            renderPreview();
-          });
-          rightWrap.appendChild(count);
-          rightWrap.appendChild(clearBtn);
-          boxHeader.appendChild(name);
-          boxHeader.appendChild(rightWrap);
-          const chips = document.createElement('div');
-          chips.className = 'chips';
-          const details = document.createElement('details');
-          details.className = 'selector';
-          details.innerHTML = `<summary>Seleziona Opzioni</summary>`;
-          const selectorBody = document.createElement('div');
-          selectorBody.className = 'selector-body';
-          getIndicatorGroups(def).forEach(group => {
-            const groupBlock = document.createElement('section');
-            groupBlock.className = 'option-group';
-            const title = document.createElement('div');
-            title.className = 'option-group-title';
-            if (group.color) title.dataset.color = group.color;
-            title.textContent = group.label;
-            groupBlock.appendChild(title);
-            const optionList = document.createElement('div');
-            optionList.className = 'option-list';
-            (group.options || []).forEach(optionValue => {
-              const label = document.createElement('label');
-              label.className = 'option-item';
-              const input = document.createElement('input');
-              input.type = 'checkbox';
-              input.checked = getOrderedSelected(tf, def).includes(optionValue);
-              input.addEventListener('change', () => {
-                const current = new Set(state.indicators[tf][def.key]);
-                if (input.checked) current.add(optionValue); else current.delete(optionValue);
-                state.indicators[tf][def.key] = getIndicatorOptions(def).filter(item => current.has(item));
-                renderIndicatorOptions(tf, def, chips, count);
-                renderPreview();
-              });
-              const text = document.createElement('span');
-              text.textContent = optionValue;
-              label.appendChild(input);
-              label.appendChild(text);
-              optionList.appendChild(label);
-            });
-            groupBlock.appendChild(optionList);
-            selectorBody.appendChild(groupBlock);
-          });
-          details.appendChild(selectorBody);
-          box.appendChild(boxHeader);
-          box.appendChild(chips);
-          box.appendChild(details);
-          renderIndicatorOptions(tf, def, chips, count);
-          grid.appendChild(box);
-        });
-        indicatorsSection.appendChild(grid);
-        card.appendChild(indicatorsSection);
-
-        const spaceSection = buildSpaceEditorSection(tf);
-        card.appendChild(spaceSection);
-
-        indicatorsEditor.appendChild(card);
-      });
-    }
-    function renderReportList(values) {
-      if (!values || !values.length) return `<span class="dash">—</span>`;
-      return values.map(value => `<div class="report-list-item">• ${escapeHtml(value)}</div>`).join('');
-    }
-    function renderWritingLines(count, fieldLabel = '') {
-      const safeAttr = String(fieldLabel || 'notes-field').toLowerCase().replace(/[^a-z0-9_-]+/g, '-').replace(/^-+|-+$/g, '') || 'notes-field';
-      const safeLabel = escapeHtml(fieldLabel || 'Campo compilabile');
-      return `<div class="fillable-writing-block"><textarea class="fillable-textarea" rows="${count}" name="${safeAttr}" aria-label="${safeLabel}"></textarea><div class="writing-lines">${Array.from({ length: count }).map(() => '<div class="writing-line"></div>').join('')}</div></div>`;
-    }
-    function collectSortedTargets() {
-      const targets = [];
-      config.indicator_timeframes.forEach(tf => {
-        config.space_items.forEach(item => {
-          const entry = getSpaceEntry(tf, item);
-          if (!entry.selected) return;
-          const level = parseNumber(entry.level);
-          const gap = calculateGap(state.commonClose, entry.level);
-          if (level === null || gap === null) return;
-          targets.push({
-            tf,
-            item,
-            level,
-            direction: entry.direction || '',
-            type: entry.type || '',
-            gap,
-            absGap: Math.abs(gap)
-          });
-        });
-      });
-      targets.sort((a, b) => a.absGap - b.absGap || a.gap - b.gap || a.tf.localeCompare(b.tf) || a.item.localeCompare(b.item));
-      return targets;
-    }
-    function renderTargetsSection() {
-      const targets = collectSortedTargets();
-      if (!targets.length) {
-        return `<div class="space-item-line"><span class="dash">—</span></div>`;
-      }
-      return targets.map(target => {
-        const parts = [
-          escapeHtml(target.tf),
-          renderSpaceItemToken(target.item)
-        ];
-        if (target.direction) parts.push(escapeHtml(target.direction));
-        if (target.type) parts.push(renderTypeToken(target.type));
-        parts.push(escapeHtml(formatMoney(target.level)));
-        parts.push(`<span class="${gapClass(target.gap)}">${escapeHtml(formatSignedMoney(target.gap))}</span>`);
-        return `<div class="space-item-line">${parts.join(' - ')}</div>`;
-      }).join('');
-    }
-    function renderLeadingWritableSections() {
-      return `<section class="summary-stack">
-        <div class="summary-block">
-          <div class="summary-block-title">Outcome</div>
-          ${renderWritingLines(6, 'Outcome')}
-        </div>
-        <div class="summary-block">
-          <div class="summary-block-title">Note</div>
-          ${renderWritingLines(6, 'Note')}
-        </div>
-      </section>`;
-    }
-    function renderClosureSection() {
-      return `<section class="tf-report">
-        <div class="tf-report-title">Chiusura</div>
-        <div class="tf-chapter">
-          <div class="chapter-title">Targets</div>
-          ${renderTargetsSection()}
-        </div>
-        <div class="tf-chapter">
-          <div class="chapter-title">Verdetto</div>
-          ${renderWritingLines(6, 'Verdetto')}
-        </div>
-        <div class="tf-chapter">
-          <div class="chapter-title">Decisione</div>
-          <div class="verdict-hint">Indica cosa avresti fatto. Ingresso o no? Se si, indica strike price o target di prezzo.</div>
-          ${renderWritingLines(3, 'Decisione')}
-        </div>
-        <div class="tf-chapter">
-          <div class="chapter-title">Lettura Carta</div>
-          ${renderWritingLines(6, 'Lettura Carta')}
-        </div>
-        <div class="tf-chapter">
-          <div class="chapter-title">Modifiche</div>
-          ${renderWritingLines(3, 'Modifiche')}
-        </div>
-      </section>`;
-    }
-    function renderPreview() {
-      state.title.ticker = tickerInput.value;
-      state.title.date = dateInput.value;
-      state.title.direction = directionSelect.value;
-      state.title.mode = reportModeSelect.value;
-      state.commonClose = globalCloseInput.value;
-      const chunkPairs = (items) => {
-        const rows = [];
-        for (let i = 0; i < items.length; i += 2) rows.push(items.slice(i, i + 2));
-        return rows.map(pair => {
-          const cells = pair.map(entry => `<td>${escapeHtml(entry.tf)}</td><td>${entry.value || '<span class="dash">—</span>'}</td>`).join('');
-          return `<tr>${cells}${pair.length < 2 ? '<td></td><td></td>' : ''}</tr>`;
-        }).join('');
-      };
-      const smaItems = config.timeframes.map(tf => ({ tf, value: state.sma21[tf] ? escapeHtml(state.sma21[tf]) : '' }));
-      const smaRows = chunkPairs(smaItems);
-      const marketSliItems = marketSliIndices.map(index => ({ tf: index, value: state.marketSli[index] ? escapeHtml(state.marketSli[index]) : '' }));
-      const marketSliRows = chunkPairs(marketSliItems);
-      const candleItems = config.timeframes.map(tf => {
-        const pattern = state.candles[tf]?.pattern || '';
-        const attrs = state.candles[tf]?.attributes || [];
-        const status = state.candles[tf]?.status || '';
-        const daysOpen = state.candles[tf]?.daysOpen || '';
-        const combinedParts = pattern ? [pattern, ...attrs] : [];
-        if (status) combinedParts.push(status);
-        if (status === 'Aperta' && candleOpenDayTimeframes.has(tf) && daysOpen) combinedParts.push(`${daysOpen} giorni`);
-        const combined = combinedParts.join(', ');
-        return { tf, value: combined ? escapeHtml(combined) : '' };
-      });
-      const candleRows = chunkPairs(candleItems);
-      const indicatorColumns = [[indicatorDefs[0], indicatorDefs[1]], [indicatorDefs[2], indicatorDefs[3]]];
-      const tfSections = config.indicator_timeframes.map(tf => {
-        const indicatorHtml = indicatorColumns.map(col => `<div>${col.map(def => `<div class="indicator-report-box"><div class="indicator-report-name">${escapeHtml(def.label)}</div><div class="indicator-report-body">${renderReportList(getOrderedSelected(tf, def))}</div></div>`).join('')}</div>`).join('');
-        return `<section class="tf-report">
-          <div class="tf-report-title">${escapeHtml(tf)}</div>
-          <div class="tf-chapter">
-            <div class="chapter-title">Indicatori</div>
-            <div class="indicator-report-grid">${indicatorHtml}</div>
-            ${renderWritingLines(2, `${tf} Indicatori`)}
+        <div class="summbox">
+          <div style="display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between">
+            <label style="margin:0">Cluster di ostacoli (concentrazione per distanza % · ≥3 TF = zona forte)</label>
+            <div style="display:flex;align-items:center;gap:6px"><span class="tflist" style="margin:0">Tolleranza %</span><input type="number" id="cluster-tol" value="1.0" step="0.1" min="0.1" style="width:80px;padding:5px 8px" oninput="updateSummaries()"></div>
           </div>
-        </section>`;
-      }).join('');
-      const leadingWritableSections = renderLeadingWritableSections();
-      const closureSection = renderClosureSection();
-      const decisionMeta = '<div class="report-title">DECISIONE: GIUSTA / SBAGLIATA</div>';
-      const targetMeta = '<div class="report-title">TARGET: GIUSTO / SBAGLIATO</div>';
-      const closeMeta = parseNumber(state.commonClose) === null ? '' : `<div class="report-meta">Close comune: ${escapeHtml(formatMoney(state.commonClose))}</div>`;
-      printReport.innerHTML = `<header class="report-header"><div class="report-title">${escapeHtml(composeTitle())}</div>${decisionMeta}${targetMeta}${closeMeta}</header>
-        ${leadingWritableSections}
-        <section class="summary-grid-2">
-          <div class="summary-block"><div class="summary-block-title">21SMA</div><table class="report-table summary-table-4"><thead><tr><th>TF</th><th>Stato</th><th>TF</th><th>Stato</th></tr></thead><tbody>${smaRows}</tbody></table></div>
-          <div class="summary-block"><div class="summary-block-title">Candele</div><table class="report-table summary-table-4"><thead><tr><th>TF</th><th>Pattern</th><th>TF</th><th>Pattern</th></tr></thead><tbody>${candleRows}</tbody></table></div>
-        </section>
-        <section class="summary-grid-2">
-          <div class="summary-block"><div class="summary-block-title">Market SLI</div><table class="report-table summary-table-4"><thead><tr><th>Indice</th><th>Selezione</th><th>Indice</th><th>Selezione</th></tr></thead><tbody>${marketSliRows}</tbody></table></div>
-        </section>
-        ${tfSections}
-        ${closureSection}`;
-    }
-    function buildEditors() {
-      populateDirectionOptions();
-      populateReportModeOptions();
-      buildMarketSliEditor();
-      buildSmaEditor();
-      buildCandlesEditor();
-      buildIndicatorsEditor();
-      directionSelect.value = state.title.direction;
-      reportModeSelect.value = state.title.mode;
-      globalCloseInput.value = state.commonClose;
-    }
-    async function exportJson() {
-      const payload = {
-        title: { ticker: (state.title.ticker || '').trim().toUpperCase(), date: formatDate(state.title.date), direction: state.title.direction, mode: state.title.mode },
-        marketSli: state.marketSli,
-        sma21: state.sma21,
-        candles: state.candles,
-        indicators: state.indicators,
-        commonClose: state.commonClose,
-        spazio: state.space
-      };
-      const json = JSON.stringify(payload, null, 2);
-      const filename = `selection-${(state.title.ticker || 'report').trim().toUpperCase() || 'report'}.json`;
-      const blob = new Blob([json], { type: 'application/json' });
+          <div id="cluster-box" style="margin-top:8px"></div>
+        </div>
+      </fieldset>
 
-      try {
-        if (navigator.share && window.File) {
-          const sharedFile = new File([blob], filename, { type: 'application/json' });
-          if (!navigator.canShare || navigator.canShare({ files: [sharedFile] })) {
-            await navigator.share({ files: [sharedFile], title: filename });
-            configStatus.textContent = 'JSON condiviso/esportato.';
-            return;
-          }
-        }
-      } catch (error) {
-        // Se l’utente annulla la condivisione, passa al download/fallback senza bloccare l’app.
-      }
+      <fieldset class="full" style="margin-top:14px"><legend>Conferme di contesto</legend>
+        <div class="checks">
+          <label class="chk"><input type="checkbox" id="c-weekly"> Direzione weekly confermata (elephant)</label>
+          <label class="chk"><input type="checkbox" id="c-daily5"> Daily va ≥ 5 candele</label>
+          <label class="chk"><input type="checkbox" id="c-3d2"> 3-day va ≥ 2 candele</label>
+        </div>
+        <div class="grid" style="margin-top:12px">
+          <div><label>Catalizzatore</label><select id="f-cat"><option value="nessuno">nessuno</option><option value="super6">Super 6</option><option value="earnings">earnings</option><option value="split">split</option></select></div>
+          <div><label>Colore della candela</label><input type="text" id="f-color" placeholder="es. white large / doji" autocomplete="off"></div>
+        </div>
+      </fieldset>
 
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = filename;
-      a.style.display = 'none';
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      window.setTimeout(() => URL.revokeObjectURL(url), 1000);
-      configStatus.textContent = 'JSON esportato. Su iPad potrebbe apparire nel menu Condividi/Download di Safari.';
-    }
-    function readTextFile(file) {
-      if (file && typeof file.text === 'function') return file.text();
-      return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = () => resolve(String(reader.result || ''));
-        reader.onerror = () => reject(reader.error || new Error('Impossibile leggere il file.'));
-        reader.readAsText(file);
-      });
-    }
+      <div class="grid" style="margin-top:14px">
+        <div class="full"><label>Predictive paragraph (forward read oggettivo, post 3 candele)</label><textarea id="f-pp" placeholder="Cosa farà dopo le 3 candele e in cosa va a sbattere."></textarea></div>
+        <div class="full"><label>Target / dove "crash into"</label><input type="text" id="f-target" placeholder="es. SMA233 on daily, then pause" autocomplete="off"></div>
+      </div>
 
-    function resetForm() {
-      tickerInput.value = 'SPX';
-      dateInput.value = '';
-      state.title.ticker = 'SPX';
-      state.title.date = '';
-      state.title.direction = config.directions[0] || 'UP';
-      state.title.mode = reportModes[0];
-      globalCloseInput.value = state.commonClose;
-      state.commonClose = '';
-      globalCloseInput.value = '';
-      state.marketSli = {};
-      state.sma21 = {};
-      state.candles = {};
-      state.indicators = {};
-      state.space = {};
-      normalizeState();
-      buildEditors();
-      renderPreview();
-      configStatus.textContent = 'Form resettato.';
-    }
+      <fieldset class="full" style="margin-top:14px"><legend>Opzione (USA · americana)</legend>
+        <div class="grid">
+          <div><label>Strike</label><input type="number" id="o-strike" step="any" placeholder="one strike OTM"></div>
+          <div><label>Scadenza (3° venerdì)</label><input type="date" id="o-exp"></div>
+          <div><label>Premio pagato ($/contratto)</label><input type="number" id="o-prem" step="any" placeholder="es. 4.20"></div>
+          <div><label>Note ingresso (opz.)</label><input type="text" id="o-note" autocomplete="off"></div>
+        </div>
+      </fieldset>
 
-    tickerInput.addEventListener('input', renderPreview);
-    globalCloseInput.addEventListener('input', () => { state.commonClose = globalCloseInput.value; buildIndicatorsEditor(); renderPreview(); });
-    dateInput.addEventListener('input', renderPreview);
-    directionSelect.addEventListener('change', renderPreview);
-    reportModeSelect.addEventListener('change', renderPreview);
-    document.getElementById('print-btn').addEventListener('click', () => window.print());
-    document.getElementById('export-json-btn').addEventListener('click', exportJson);
-    document.getElementById('reset-btn').addEventListener('click', resetForm);
-    document.getElementById('default-config-btn').addEventListener('click', () => {
-      config = deepCopy(defaultConfig);
-      normalizeState();
-      buildEditors();
-      renderPreview();
-      configFileInput.value = '';
-      configStatus.textContent = 'Configurazione predefinita ripristinata.';
-    });
-    configFileInput.addEventListener('change', async (event) => {
-      const file = event.target.files?.[0];
-      if (!file) return;
-      try {
-        const text = await readTextFile(file);
-        const parsed = parseConfigText(text);
-        if (!isValidConfig(parsed)) throw new Error('Formato YAML/JSON non valido o incompleto.');
-        config = parsed;
-        normalizeState();
-        buildEditors();
-        renderPreview();
-        configStatus.textContent = `Configurazione caricata: ${file.name}`;
-      } catch (error) {
-        configStatus.textContent = `Errore: ${error.message}`;
-      }
-    });
+      <div style="margin-top:12px"><span id="setup-badge" class="badge sub">Compila i requisiti</span></div>
+      <div class="row-actions"><button class="btn" onclick="saveTrade()">Salva trade</button><span id="new-flash" class="flash"></span></div>
+    </div>
+  </section>
 
-    tickerInput.value = state.title.ticker;
-    reportModeSelect.value = state.title.mode;
-    globalCloseInput.value = state.commonClose;
-    const isIOSLike = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-    if (isIOSLike) {
-      configStatus.textContent = 'iPad: usa Safari. Le preview di Dropbox/File/Noteful possono bloccare JavaScript o download.';
-    }
-    normalizeState();
-    buildEditors();
-    renderPreview();
-  </script>
+  <section id="view-open" style="display:none">
+    <div class="toolbar"><button class="btn ghost sm" onclick="document.getElementById('imp-one').click()">Apri trade da file</button>
+      <input type="file" id="imp-one" accept="application/json" style="display:none" onchange="importOne(event)"></div>
+    <div id="open-list"></div>
+  </section>
+
+  <section id="view-hist" style="display:none">
+    <div class="toolbar">
+      <label class="chk" style="color:var(--ink)"><input type="checkbox" id="only-complete" onchange="render()"> Solo setup completo</label>
+      <span class="spacer"></span>
+      <button class="btn ghost sm" onclick="exportCSV()">Esporta CSV (Excel)</button>
+      <button class="btn ghost sm" onclick="exportJSON()">Backup completo (JSON)</button>
+      <button class="btn ghost sm" onclick="document.getElementById('imp').click()">Importa backup</button>
+      <input type="file" id="imp" accept="application/json" style="display:none" onchange="importJSON(event)">
+    </div>
+    <div id="stats-wrap"></div>
+    <div class="panel" id="hist-table-wrap"></div>
+  </section>
+</main>
+
+<script>
+const KEY="backwork_v5";
+let trades=load();
+let fType="call";
+
+const ENTRY_TFS=["D","3D"], EXIT_TFS=["233","D","3D"];
+const TFS_FULL=[{k:"M",l:"Monthly"},{k:"8D",l:"8-Days"},{k:"W",l:"Weekly"},{k:"3D",l:"3-Days"},{k:"D",l:"Daily"},{k:"233",l:"233"}];
+const INDS=[{k:"Xmas",l:"Xmas Cross (red 2SMA / green 3x3DMA)"},{k:"SRSI",l:"SRSI (red K / green D)"},{k:"MACD",l:"MACD (red MACD / green Signal)"},{k:"DM",l:"DM (red PDI / green MDI / yellow ADX)"}];
+const OBSTACLES=["TBB","BBB","SMA3","SMA13","SMA21","SMA34","SMA55","SMA89","SMA144","SMA233","SMA377","SMA610","SMA987"];
+
+const CTX=[{v:"",l:"—"},{v:"bull",l:"Bullish (red>green)"},{v:"bear",l:"Bearish (green>red)"},{v:"neutral",l:"Neutral (flat / together, no cross)"},{v:"clasp",l:"Clasping hands (red crossing over green)"},{v:"clasp_against",l:"Clasping hands against (red crossing under green)"}];
+const CTXMAP={bull:"bull",clasp:"bull",bear:"bear",clasp_against:"bear",neutral:"neutral"};
+const DIRS=[{v:"",l:"—"},{v:"flat",l:"Piatta (neutrale)"},{v:"flat_from_up",l:"Piatta, cambio da salita"},{v:"flat_from_down",l:"Piatta, cambio da discesa"},
+ {v:"up",l:"In salita"},{v:"up_from_down",l:"In salita, cambio da discesa"},{v:"up_from_flat",l:"In salita, cambio da piatta"},{v:"up_strength",l:"In salita, rafforzamento"},{v:"up_weak",l:"In salita, indebolimento"},
+ {v:"down",l:"In discesa"},{v:"down_strength",l:"In discesa, rafforzamento"},{v:"down_weak",l:"In discesa, indebolimento"},{v:"down_from_up",l:"In discesa, cambio da salita"},{v:"down_from_flat",l:"In discesa, cambio da piatta"}];
+// Rosse + PDI: mapping normale
+const DIRMAP={flat:"neutral",flat_from_up:"bear",flat_from_down:"bull",up:"bull",up_from_down:"bull",up_from_flat:"bull",up_strength:"bull",up_weak:"bull",down:"bear",down_strength:"bear",down_weak:"bear",down_from_up:"bear",down_from_flat:"bear"};
+// MDI (verde della DM): invertito — MDI giù = bull, MDI su = bear
+const DIRMAP_MDI={flat:"neutral",flat_from_up:"bull",flat_from_down:"bear",up:"bear",up_from_down:"bear",up_from_flat:"bear",up_strength:"bear",up_weak:"bear",down:"bull",down_strength:"bull",down_weak:"bull",down_from_up:"bull",down_from_flat:"bull"};
+// Altre verdi (medie): normale ma "discesa che si indebolisce" anticipa il turn -> bull
+const DIRMAP_GREEN=Object.assign({},DIRMAP,{down_weak:"bull"});
+function lineMap(indK,color){if(color==="red")return DIRMAP;if(indK==="DM")return DIRMAP_MDI;return DIRMAP_GREEN;}
+
+const ITEMS=[
+ {n:"Top Bollinger Band (body, flat)",dir:"bear",k:"hard"},{n:"Top Bollinger Band (rising/falling or wick)",dir:"bear",k:"soft"},
+ {n:"Bottom Bollinger Band (body, flat)",dir:"bull",k:"hard"},{n:"Bottom Bollinger Band (rising/falling or wick)",dir:"bull",k:"soft"},
+ {n:"233MA (body)",dir:"neutral",k:"hard"},{n:"55MA (body)",dir:"neutral",k:"hard"},
+ {n:"34MA (body, trader's choice)",dir:"neutral",k:"soft"},{n:"21MA",dir:"neutral",k:"soft"},{n:"MA wick (any)",dir:"neutral",k:"soft"},
+ {n:"Christmas Cross (crossing)",dir:"neutral",k:"hard"},{n:"StochRSI (crossing)",dir:"neutral",k:"hard"},{n:"MACD (crossing)",dir:"neutral",k:"hard"},{n:"Directional Movement (crossing/fired)",dir:"neutral",k:"hard"},
+ {n:"StochRSI > 80",dir:"bear",k:"soft"},{n:"StochRSI < 20",dir:"bull",k:"soft"},{n:"MACD histogram flat/reversing",dir:"neutral",k:"cond"},
+ {n:"Trigger fired",dir:"neutral",k:"hard"},{n:"Trigger cocked",dir:"neutral",k:"soft"},
+ {n:"Up Autowave",dir:"bull",k:"soft"},{n:"Down Autowave",dir:"bear",k:"soft"},
+ {n:"Bullish Divergence",dir:"bull",k:"hard"},{n:"Bearish Divergence",dir:"bear",k:"hard"},
+ {n:"Tweezer Bottom",dir:"bull",k:"hard"},{n:"Tweezer Top",dir:"bear",k:"hard"},
+ {n:"Hammer",dir:"bull",k:"hard"},{n:"Hanging Man",dir:"bear",k:"hard"},
+ {n:"Inverted Hammer",dir:"bull",k:"cond"},{n:"Gravestone Doji",dir:"bear",k:"cond"},
+ {n:"Doji",dir:"neutral",k:"cond"},{n:"Long-legged Doji",dir:"neutral",k:"cond"},
+ {n:"Laminated TBB/233MA",dir:"neutral",k:"hard"},{n:"Laminated TBB/55MA",dir:"neutral",k:"hard"},
+ {n:"Laminated BBB/233MA",dir:"neutral",k:"hard"},{n:"Laminated BBB/55MA",dir:"neutral",k:"hard"},
+ {n:"Laminated 55/233MA",dir:"neutral",k:"hard"},{n:"Laminated 21/55MA",dir:"neutral",k:"hard"},{n:"Laminated 21/233MA",dir:"neutral",k:"hard"}
+];
+
+function load(){try{return JSON.parse(localStorage.getItem(KEY))||[]}catch(e){return[]}}
+function persist(){localStorage.setItem(KEY,JSON.stringify(trades))}
+function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,6)}
+function todayISO(){return new Date().toISOString().slice(0,10)}
+function val(id){const e=document.getElementById(id);return e?e.value.trim():""}
+function num(id){const e=document.getElementById(id);if(!e)return null;const v=parseFloat(e.value);return isNaN(v)?null:v}
+function esc(s){return(s==null?"":String(s)).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
+function optsHtml(arr){return arr.map(o=>`<option value="${o.v}">${esc(o.l)}</option>`).join("")}
+function dirColor(type){return type==="put"?"var(--lost)":"var(--won)"} // call = verde, put = rosso (solo grafica)
+// ostacolo "passato": call con ostacolo sotto la Close (ora supporto) / put con ostacolo sopra (ora resistenza)
+function passedObs(type,diff){const isPut=type==="put";if(!isPut&&diff<0)return{p:true,short:"⚠ passato (supporto)",full:"⚠ sotto la Close → ora supporto, non più resistenza/target"};if(isPut&&diff>0)return{p:true,short:"⚠ passato (resistenza)",full:"⚠ sopra la Close → ora resistenza, non più supporto/target"};return{p:false,short:"",full:""}}
+
+// ---- support matrix ----
+function entryItems(dir){const allow=dir==="call"?["bull","neutral"]:["bear","neutral"];return ITEMS.map((it,i)=>({...it,idx:i})).filter(it=>allow.includes(it.dir))}
+function exitItems(t){const allow=t==="call"?["bear","neutral"]:["bull","neutral"];return ITEMS.map((it,i)=>({...it,idx:i})).filter(it=>allow.includes(it.dir))}
+function kBadge(k){return k?`<span class="k ${k}">${k}</span>`:""}
+function matrix(items,tfs,prefix,onchange){return `<div class="ovf"><table class="mx"><thead><tr><th>Item</th>${tfs.map(t=>`<th>${t}</th>`).join("")}</tr></thead><tbody>`+
+  items.map(it=>`<tr class="dir-${it.dir}"><td>${esc(it.n)}${kBadge(it.k)}</td>${tfs.map(t=>`<td class="c"><input type="checkbox" id="${prefix}-${it.idx}-${t}" onchange="${onchange}"></td>`).join("")}</tr>`).join("")+`</tbody></table></div>`}
+function readCells(items,tfs,prefix){const c=[];items.forEach(it=>tfs.forEach(t=>{const e=document.getElementById(`${prefix}-${it.idx}-${t}`);if(e&&e.checked)c.push({n:it.n,tf:t,k:it.k,dir:it.dir})}));return c}
+function tally(cells){const hard=cells.filter(c=>c.k==="hard").length,soft=cells.filter(c=>c.k==="soft").length,cond=cells.filter(c=>c.k==="cond").length;return{total:cells.length,hard,soft,cond,hardEff:hard+(hard>=3?cond:0),softEff:soft+(hard>=3?0:cond)}}
+function renderEntryMx(){document.getElementById("sup-mx").innerHTML=matrix(entryItems(fType),ENTRY_TFS,"se","updEntry()")}
+function updEntry(){const cells=readCells(entryItems(fType),ENTRY_TFS,"se");const tl=tally(cells);
+  const box=document.getElementById("sup-count");box.textContent=`Hard support: ${tl.hardEff} / 3`;box.className="countbox"+(tl.hardEff>=3?" green":"");
+  let html="";ENTRY_TFS.forEach(tf=>{const tfName=tf==="D"?"Daily":"3-Days";
+    const hardList=cells.filter(c=>c.tf===tf&&c.k==="hard").map(c=>c.n);const condList=cells.filter(c=>c.tf===tf&&c.k==="cond").map(c=>c.n+" (cond)");const softList=cells.filter(c=>c.tf===tf&&c.k==="soft").map(c=>c.n);
+    html+=`<div><b>${tfName} Hard Support Items:</b> ${(hardList.concat(condList)).join(", ")||"—"}</div>`;
+    html+=`<div><b>${tfName} Support Items:</b> ${softList.join(", ")||"—"}</div>`});
+  document.getElementById("sup-lists").innerHTML=html;updateSetupBadge()}
+
+// ---- SLI ----
+function checkSli(){const m=val("sli-mkt2"),s=val("sli-sub");const dev=(m==="no"&&(s==="no"||s==="none"));
+  document.getElementById("sli-warn").innerHTML=dev?`<div class="warnbox">⚠ Nessuna SLI di mercato né di sub-index: stai DEVIANDO dalle regole. Serve SLI sul Mercato o sul Sub-Index.</div>`:"";updateSetupBadge()}
+function sliOk(){const m=val("sli-mkt2"),s=val("sli-sub");return m==="yes"||s==="yes"}
+function setupComplete(){return sliOk()&&tally(readCells(entryItems(fType),ENTRY_TFS,"se")).hardEff>=3}
+function updateSetupBadge(){const el=document.getElementById("setup-badge");if(setupComplete()){el.className="badge ok";el.textContent="Setup completo (SLI mercato/sub-index + ≥3 hard support)"}else{el.className="badge sub";el.textContent="Sub-standard (manca SLI o <3 hard support)"}}
+
+document.querySelectorAll("#f-type button").forEach(b=>{b.onclick=()=>{fType=b.dataset.v;document.querySelectorAll("#f-type button").forEach(x=>x.classList.toggle("on",x===b));renderEntryMx();updEntry();rerenderOpenBB()}});
+
+// ---- multi-TF module ----
+function obsRowHtml(tfk,j){return `<div class="obsrow" id="tf-${tfk}-obsrow-${j}">
+  <div><label>Ostacolo</label><select id="tf-${tfk}-obs-${j}" onchange="updTF('${tfk}')"><option value="">—</option>${OBSTACLES.map(o=>`<option value="${o}">${o}</option>`).join("")}</select></div>
+  <div><label>Valore ($)</label><input type="number" step="any" id="tf-${tfk}-obsval-${j}" oninput="updTF('${tfk}')"></div>
+  <div class="diff" id="tf-${tfk}-obsdiff-${j}">Diff vs Close: —</div></div>`}
+function buildTFModule(){
+  document.getElementById("tf-module").innerHTML=TFS_FULL.map(tf=>{
+    const noInd=(tf.k==="233"); // 233: solo ostacoli (l'SLI è dato da contesto+direzione, già registrato)
+    const indPart=noInd?`<div class="tflist" style="margin:0 0 4px">233: solo ostacoli (SLI già coperto dai box SLI e dagli altri TF).</div>`:
+      `<div class="ovf"><table class="tfmx"><thead><tr><th>Indicatore</th><th>Contesto</th><th>Direzione Rossa</th><th>Direzione Verde</th></tr></thead><tbody>`+
+      INDS.map(ind=>`<tr><td>${esc(ind.l)}</td>
+        <td><select id="tf-${tf.k}-ctx-${ind.k}" onchange="updTF('${tf.k}')">${optsHtml(CTX)}</select></td>
+        <td><select id="tf-${tf.k}-red-${ind.k}" onchange="updTF('${tf.k}')">${optsHtml(DIRS)}</select></td>
+        <td><select id="tf-${tf.k}-green-${ind.k}" onchange="updTF('${tf.k}')">${optsHtml(DIRS)}</select></td></tr>`).join("")+
+      `</tbody></table></div><div id="tf-${tf.k}-ctxbar"></div><div id="tf-${tf.k}-dirbar"></div>`;
+    return `<details class="tfblock"><summary><b>${tf.k}</b> · ${tf.l} <span id="tf-${tf.k}-sum" class="tflist" style="margin:0"></span></summary>
+      <div class="inner">
+        ${indPart}
+        <div style="margin-top:6px"><label>Ostacoli (aggiungine quanti vuoi)</label><div id="tf-${tf.k}-obswrap">${obsRowHtml(tf.k,0)}</div></div>
+        <div style="margin-top:10px;border-top:1px solid var(--line2);padding-top:8px"><label class="chk"><input type="checkbox" id="bb-${tf.k}-on" onchange="toggleBB('${tf.k}')"> <b>BB Analysis</b> (espansione Bollinger su questo TF)</label><div id="bb-${tf.k}-wrap"></div></div>
+      </div></details>`}).join("");
+}
+function pctBar3(b,r,n){const tot=b+r+n;if(tot===0)return`<span class="tflist" style="margin:0">—</span>`;
+  const bp=Math.round(b/tot*100),rp=Math.round(r/tot*100);let np=100-bp-rp;if(np<0)np=0;
+  return `<div class="barwrap"><div class="bar"><div class="b" style="width:${bp}%"></div><div class="r" style="width:${rp}%"></div><div class="nu" style="width:${np}%"></div></div><span><b style="color:var(--won)">${bp}% Bull</b> · <b style="color:var(--lost)">${rp}% Bear</b> · <b style="color:var(--muted)">${np}% Neutral</b></span></div>`}
+function getObsRows(tfk){const rows=[];let j=0;while(document.getElementById(`tf-${tfk}-obs-${j}`)){const name=val(`tf-${tfk}-obs-${j}`);const v=parseFloat(document.getElementById(`tf-${tfk}-obsval-${j}`).value);rows.push({j,name,value:isNaN(v)?null:v});j++}return rows}
+function ensureObs(tfk){const rows=getObsRows(tfk);const last=rows[rows.length-1];if(last&&last.name&&last.value!=null){document.getElementById(`tf-${tfk}-obswrap`).insertAdjacentHTML("beforeend",obsRowHtml(tfk,rows.length))}}
+function readTF(tfk){const o={ctx:{},red:{},green:{}};INDS.forEach(ind=>{o.ctx[ind.k]=val(`tf-${tfk}-ctx-${ind.k}`);o.red[ind.k]=val(`tf-${tfk}-red-${ind.k}`);o.green[ind.k]=val(`tf-${tfk}-green-${ind.k}`)});
+  o.obstacles=getObsRows(tfk).filter(r=>r.name).map(r=>({name:r.name,value:r.value}));return o}
+function ctxScore(o){let b=0,r=0,n=0;INDS.forEach(ind=>{const m=CTXMAP[o.ctx[ind.k]];if(m==="bull")b++;else if(m==="bear")r++;else if(m==="neutral")n++});return{b,r,n}}
+function dirScore(o){let b=0,r=0,n=0;INDS.forEach(ind=>{
+  const mr=lineMap(ind.k,"red")[o.red[ind.k]];if(mr==="bull")b++;else if(mr==="bear")r++;else if(mr==="neutral")n++;
+  const mg=lineMap(ind.k,"green")[o.green[ind.k]];if(mg==="bull")b++;else if(mg==="bear")r++;else if(mg==="neutral")n++;
+});return{b,r,n}}
+function pct3(s){const t=s.b+s.r+s.n;if(t===0)return null;return `${Math.round(s.b/t*100)}/${Math.round(s.r/t*100)}/${Math.round(s.n/t*100)}`}
+function updTF(tfk){
+  const o=readTF(tfk);const cs=ctxScore(o),ds=dirScore(o);
+  const cb=document.getElementById("tf-"+tfk+"-ctxbar");if(cb)cb.innerHTML="<label>Contesto indicatori</label>"+pctBar3(cs.b,cs.r,cs.n);
+  const db=document.getElementById("tf-"+tfk+"-dirbar");if(db)db.innerHTML="<label>Direzione linee</label>"+pctBar3(ds.b,ds.r,ds.n);
+  const close=num("f-close");
+  getObsRows(tfk).forEach(r=>{const el=document.getElementById(`tf-${tfk}-obsdiff-${r.j}`);if(!el)return;if(r.name&&r.value!=null&&close!=null){const d=r.value-close;const pa=passedObs(fType,d);el.innerHTML=`Diff vs Close: <span style="color:${dirColor(fType)}">${d>=0?'+':''}${d.toFixed(2)}$</span>${pa.p?` <span style="color:var(--warn)">${pa.full}</span>`:''}`}else el.textContent="Diff vs Close: —"});
+  ensureObs(tfk);
+  const sp=[];if(pct3(cs))sp.push("ctx "+pct3(cs));if(pct3(ds))sp.push("dir "+pct3(ds));if(o.obstacles.length)sp.push(o.obstacles.length+" ostacoli");
+  document.getElementById("tf-"+tfk+"-sum").textContent=sp.length?"· "+sp.join(" · "):"";
+  updateSummaries();
+}
+function refreshAllTF(){TFS_FULL.forEach(tf=>updTF(tf.k))}
+function updateSummaries(){
+  const tfLines=TFS_FULL.map(tf=>{const o=readTF(tf.k);const cs=ctxScore(o),ds=dirScore(o);const parts=[];if(pct3(cs))parts.push("ctx "+pct3(cs));if(pct3(ds))parts.push("dir "+pct3(ds));return parts.length?`<b>${tf.k}</b> (${tf.l}): ${parts.join(" · ")}`:null}).filter(Boolean);
+  document.getElementById("tf-summary").innerHTML=tfLines.join("<br>")||"—";
+  const close=num("f-close");let all=[];TFS_FULL.forEach(tf=>{getObsRows(tf.k).forEach(r=>{if(r.name&&r.value!=null&&close!=null)all.push({tf:tf.k,name:r.name,diff:r.value-close})})});
+  all.sort((a,b)=>b.diff-a.diff);
+  document.getElementById("obs-summary").innerHTML=all.length?all.map(x=>{const pa=passedObs(fType,x.diff);return `${x.tf} - ${x.name} - <span style="color:${dirColor(fType)}">${(x.diff>=0?'+':'')+x.diff.toFixed(2)}$</span>${pa.p?` <span style="color:var(--warn)">${pa.short}</span>`:''}`}).join("<br>"):(close==null?"Inserisci la Close price per calcolare le differenze.":"—");
+  renderClusters(all,close,"cluster-box",fType);
+}
+function readTFAll(){const all={};TFS_FULL.forEach(tf=>all[tf.k]=readTF(tf.k));return all}
+
+// ---- cluster di ostacoli (per distanza % dalla Close, concentrazione di TF) ----
+function fmtS(v){return (v>=0?'+':'')+v.toFixed(2)}
+function clustersFrom(all,close,tol){
+  if(!all.length||close==null)return [];
+  const items=all.map(x=>({tf:x.tf,name:x.name,diff:x.diff,pct:x.diff/close*100})).sort((a,b)=>a.pct-b.pct);
+  const clusters=[];let cur=null;
+  items.forEach(it=>{if(!cur||it.pct-cur._last>tol){cur={members:[],_last:it.pct};clusters.push(cur)}cur.members.push(it);cur._last=it.pct});
+  clusters.forEach(c=>{const ps=c.members.map(m=>m.pct),ds=c.members.map(m=>m.diff),tfs=[...new Set(c.members.map(m=>m.tf))];
+    c.minPct=Math.min(...ps);c.maxPct=Math.max(...ps);c.minDiff=Math.min(...ds);c.maxDiff=Math.max(...ds);
+    c.centerPct=ps.reduce((a,b)=>a+b,0)/ps.length;c.tfs=tfs;c.strength=tfs.length});
+  return clusters;
+}
+function renderClusterHTML(clusters,type){
+  if(!clusters.length)return '<span class="tflist" style="margin:0">Inserisci Close e ostacoli per vedere i cluster.</span>';
+  const tick=dirColor(type); // verde call / rosso put
+  const allPct=clusters.flatMap(c=>c.members.map(m=>m.pct));
+  let lo=Math.min(...allPct),hi=Math.max(...allPct);if(lo===hi){lo-=1;hi+=1}const pad=(hi-lo)*0.08||0.5;lo-=pad;hi+=pad;
+  const W=1000,H=72,x=p=>(p-lo)/(hi-lo)*960+20;
+  let svg=`<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:${H}px">`;
+  svg+=`<line x1="20" y1="46" x2="980" y2="46" stroke="var(--line)"/>`;
+  if(0>=lo&&0<=hi){svg+=`<line x1="${x(0).toFixed(1)}" y1="24" x2="${x(0).toFixed(1)}" y2="60" stroke="var(--accent)" stroke-dasharray="3 3"/><text x="${x(0).toFixed(1)}" y="70" font-size="11" fill="var(--accent)" text-anchor="middle">Close 0%</text>`}
+  clusters.forEach(c=>{const x1=x(c.minPct),x2=x(c.maxPct),strong=c.strength>=3,w=Math.max(x2-x1,3);
+    svg+=`<rect x="${(x1-3).toFixed(1)}" y="26" width="${(w+6).toFixed(1)}" height="40" rx="4" fill="${strong?'rgba(19,111,120,0.14)':'rgba(0,0,0,0.05)'}"${strong?' stroke="var(--accent)" stroke-width="1"':''}/>`;
+    c.members.forEach(m=>{const stk=passedObs(type,m.diff).p?"var(--warn)":tick;svg+=`<line x1="${x(m.pct).toFixed(1)}" y1="38" x2="${x(m.pct).toFixed(1)}" y2="54" stroke="${stk}" stroke-width="2"/>`});
+    if(strong)svg+=`<text x="${((x1+x2)/2).toFixed(1)}" y="20" font-size="11" font-weight="700" fill="var(--accent-d)" text-anchor="middle">×${c.strength} TF</text>`});
+  svg+=`</svg>`;
+  const sorted=clusters.slice().sort((a,b)=>b.strength-a.strength||Math.abs(a.centerPct)-Math.abs(b.centerPct));
+  const rows=sorted.map(c=>{const strong=c.strength>=3;const tfl=[...new Set(c.members.map(m=>m.tf))].join(", ");
+    const range=c.minDiff===c.maxDiff?`${fmtS(c.minDiff)}$`:`${fmtS(c.minDiff)}…${fmtS(c.maxDiff)}$`;
+    return `<div style="${strong?'color:var(--accent-d);font-weight:600':''}">${strong?'⚠ ':''}≈ ${c.centerPct.toFixed(1)}% (${range}) — ${c.members.length} ostacoli / ${c.strength} TF: ${esc(tfl)}</div>`}).join("");
+  return svg+`<div class="tflist" style="margin-top:8px">${rows}</div>`;
+}
+function renderClusters(all,close,containerId,type){const el=document.getElementById(containerId);if(!el)return;const tolEl=document.getElementById("cluster-tol");const tol=tolEl?(parseFloat(tolEl.value)||1):1;el.innerHTML=renderClusterHTML(clustersFrom(all,close,tol),type)}
+function clusterHTMLForTrade(t){let all=[];TFS_FULL.forEach(tf=>{const o=t.tf&&t.tf[tf.k];if(o&&o.obstacles)o.obstacles.forEach(r=>{if(r.name&&r.value!=null&&t.close!=null)all.push({tf:tf.k,name:r.name,diff:r.value-t.close})})});return renderClusterHTML(clustersFrom(all,t.close,1),t.type)}
+
+// ---- hard items d'ingresso (per regola 7 ore / deterioramento) ----
+function entryHardList(t){return (t.support||[]).filter(c=>c.k==="hard"||c.k==="cond")}
+function updEv(id){const t=trades.find(x=>x.id===id);if(!t)return;const list=entryHardList(t);let n=0;list.forEach((c,k)=>{if(document.getElementById(`ev-${id}-${k}`)&&document.getElementById(`ev-${id}-${k}`).checked)n++});
+  const el=document.getElementById("evcount-"+id);if(el){const ok=n>=3;el.innerHTML=`Hard d'ingresso ancora presenti: <b>${n}</b>/${list.length} — ${ok?'<span style="color:var(--won)">≥3, continua</span>':'<span style="color:var(--lost)">&lt;3 → esci (regola 7 ore)</span>'}`}}
+
+// ---- BB Expansion Analysis ----
+const LADDER=["233","D","3D","W","8D","M","Q"];
+const tf2of=k=>LADDER[LADDER.indexOf(k)+1]||null;
+const tf3of=k=>LADDER[LADDER.indexOf(k)+2]||null;
+const BBSPEC={
+ bull:{
+  TF1:[{t:'chk',l:'Close > SMA13 AND > SMA21',s:1},{t:'choice',o:[['SMA13 < SMA21',2],['SMA13 > SMA21',1]]},{t:'choice',o:[['Xmas Cross Bullish Crossover',2],['Xmas Cross Bullish',1]]},{t:'choice',o:[['SRSI Bullish Crossover',3],['SRSI Bullish',2]]},{t:'choice',o:[['SRSI K < 80',1],['SRSI K Rising',1]]},{t:'choice',o:[['MACD Bullish Crossover',3],['MACD Bullish',2]]},{t:'chk',l:'ADX >= 20',s:1},{t:'chk',l:'PDI > MDI',s:1}],
+  TF2:[{t:'choice',o:[['BB Expanding',3],['BB Contracting con Bullish Rotation',2]]},{t:'chk',l:'Close > SMA13 AND > SMA21',s:1},{t:'choice',o:[['Xmas Cross Bullish Crossover',3],['Xmas Cross Bullish',1]]},{t:'choice',o:[['SRSI Bullish Crossover',2],['SRSI Bullish',1]]},{t:'choice',o:[['SRSI K < 80',1],['SRSI K >LOL <UOL',1]]},{t:'chk',l:'SRSI K Rising',s:1},{t:'choice',o:[['MACD Bullish Crossover',2],['MACD Bullish',2],['MACD Histogram Rising',1]]},{t:'chk',l:'ADX >= 20',s:1},{t:'chk',l:'ADX Rising',s:1},{t:'chk',l:'PDI > MDI',s:1}],
+  TF3:[{t:'auto'},{t:'chk',l:'Close > SMA13 AND > SMA21',s:1},{t:'choice',o:[['Xmas Cross Bullish Crossover',3],['Xmas Cross Bullish',1]]},{t:'choice',o:[['SRSI Bullish Crossover',2],['SRSI Bullish',1]]},{t:'choice',o:[['SRSI K < 80',1],['SRSI K >LOL <UOL',1]]},{t:'chk',l:'SRSI K Rising',s:1},{t:'chk',l:'ADX >= 20',s:1},{t:'chk',l:'ADX Rising',s:1},{t:'chk',l:'PDI > MDI',s:1}]
+ },
+ bear:{
+  TF1:[{t:'chk',l:'Close < SMA13 AND < SMA21',s:1},{t:'choice',o:[['SMA13 > SMA21',2],['SMA13 < SMA21',1]]},{t:'choice',o:[['Xmas Cross Bearish Crossover',2],['Xmas Cross Bearish',1]]},{t:'choice',o:[['SRSI Bearish Crossover',3],['SRSI Bearish',2]]},{t:'choice',o:[['SRSI K > 20',1],['SRSI K Falling',1]]},{t:'choice',o:[['MACD Bearish Crossover',3],['MACD Bearish',2]]},{t:'chk',l:'ADX >= 20',s:1},{t:'chk',l:'MDI > PDI',s:1}],
+  TF2:[{t:'choice',o:[['BB Expanding',3],['BB Contracting con Bearish Rotation',2]]},{t:'chk',l:'Close < SMA13 AND < SMA21',s:1},{t:'choice',o:[['Xmas Cross Bearish Crossover',3],['Xmas Cross Bearish',1]]},{t:'choice',o:[['SRSI Bearish Crossover',2],['SRSI Bearish',1]]},{t:'choice',o:[['SRSI K > 20',1],['SRSI K >LOL <UOL',1]]},{t:'chk',l:'SRSI K Falling',s:1},{t:'choice',o:[['MACD Bearish Crossover',2],['MACD Bearish',2],['MACD Histogram Falling',1]]},{t:'chk',l:'ADX >= 20',s:1},{t:'chk',l:'ADX Rising',s:1},{t:'chk',l:'MDI > PDI',s:1}],
+  TF3:[{t:'auto'},{t:'chk',l:'Close < SMA13 AND < SMA21',s:1},{t:'choice',o:[['Xmas Cross Bearish Crossover',3],['Xmas Cross Bearish',1]]},{t:'choice',o:[['SRSI Bearish Crossover',2],['SRSI Bearish',1]]},{t:'choice',o:[['SRSI K < 20',1],['SRSI K >LOL <UOL',1]]},{t:'chk',l:'SRSI K Falling',s:1},{t:'chk',l:'ADX >= 20',s:1},{t:'chk',l:'ADX Rising',s:1},{t:'chk',l:'MDI > PDI',s:1}]
+ }
+};
+function autoBand(type,close,b3){if(b3==null||close==null)return 0;const r=close/b3;if(type==='bull'){if(r>=0.99&&r<=1.03)return 2;if(r>1.03&&r<=1.05)return 1;return 0}else{if(r>=0.97&&r<=1.01)return 2;if(r>=0.95&&r<0.97)return 1;return 0}}
+function autoBandTxt(type){return type==='bull'?'Close vicino TBB (−1%…+3%) +2 · sopra (+3%…+5%) +1':'Close vicino BBB (+1%…−3%) +2 · sotto (−3%…−5%) +1'}
+function bbType(){return fType==='put'?'bear':'bull'}
+function bbRowHtml(tfk,level,i,row,type){
+  if(row.t==='chk')return `<label class="chk"><input type="checkbox" id="bb-${tfk}-${level}-r${i}" onchange="updBB('${tfk}')"> ${esc(row.l)} <span class="sc">+${row.s}</span></label>`;
+  if(row.t==='choice'){const opts=row.o.map((o,oi)=>`<option value="${oi}">${esc(o[0])} (+${o[1]})</option>`).join("");return `<select id="bb-${tfk}-${level}-r${i}" onchange="updBB('${tfk}')" style="margin:3px 0"><option value="">— nessuna —</option>${opts}</select>`;}
+  if(row.t==='auto')return `<div class="tflist" id="bb-${tfk}-${level}-r${i}-auto" style="margin:3px 0">${autoBandTxt(type)}: —</div>`;
+  return "";
+}
+function bbLevelHtml(tfk,level,tfLabel,type){return `<fieldset style="margin-top:8px"><legend>${level} = ${esc(tfLabel)}</legend>${BBSPEC[type][level].map((r,i)=>bbRowHtml(tfk,level,i,r,type)).join("")}<div class="counter" id="bb-${tfk}-${level}-sc"></div></fieldset>`}
+function renderBBBlock(tfk){
+  const type=bbType(),tf2=tf2of(tfk),tf3=tf3of(tfk),bl=type==='bull'?'TBB':'BBB';
+  return `<div class="tracker" style="margin-top:8px">
+    <div class="rules">BB Analysis (${type}). TF1=<b>${tfk}</b> · TF2=<b>${tf2||'—'}</b>${tf3?` · TF3=<b>${tf3}</b>`:' · niente TF3'}. Gate eliminatori: se anche 1 manca → espansione poco probabile. Pass: <b>TF2 ≥ 11</b> oppure <b>Total ≥ 34</b>. Coppie "oppure": una sola.</div>
+    <div class="grid">
+      <div><label>${bl} di ${tfk} (TF1)</label><input type="number" step="any" id="bb-${tfk}-band1" oninput="updBB('${tfk}')"></div>
+      ${tf3?`<div><label>${bl} di ${tf3} (TF3)</label><input type="number" step="any" id="bb-${tfk}-band3" oninput="updBB('${tfk}')"></div>`:''}
+    </div>
+    <div style="margin-top:8px"><b class="tflist">Gate eliminatori</b>
+      <div class="tflist" id="bb-${tfk}-g1">Gate 1: —</div>
+      <div class="checks">
+        <label class="chk"><input type="checkbox" id="bb-${tfk}-g2" onchange="updBB('${tfk}')"> Gate 2: BBB scende & TBB sale (nuova espansione)</label>
+        <label class="chk"><input type="checkbox" id="bb-${tfk}-g3" onchange="updBB('${tfk}')"> Gate 3: ADX di ${tf2||'TF2'} tra 15 e 25</label>
+        <label class="chk"><input type="checkbox" id="bb-${tfk}-g4" onchange="updBB('${tfk}')"> Gate 4: candela solida (nessun reversal)</label>
+      </div>
+    </div>
+    ${bbLevelHtml(tfk,'TF1',tfk,type)}
+    ${bbLevelHtml(tfk,'TF2',tf2||'—',type)}
+    ${tf3?bbLevelHtml(tfk,'TF3',tf3,type):''}
+    <div class="verdict v-3c" id="bb-${tfk}-result" style="margin-top:12px"></div>
+  </div>`;
+}
+function bbScoreLevel(tfk,level,type,close,b3){let s=0;BBSPEC[type][level].forEach((r,i)=>{
+  if(r.t==='chk'){const e=document.getElementById(`bb-${tfk}-${level}-r${i}`);if(e&&e.checked)s+=r.s}
+  else if(r.t==='choice'){const e=document.getElementById(`bb-${tfk}-${level}-r${i}`);if(e&&e.value!=="")s+=r.o[+e.value][1]}
+  else if(r.t==='auto'){s+=autoBand(type,close,b3)}});return s}
+function bbState(tfk){const type=bbType(),tf2=tf2of(tfk),tf3=tf3of(tfk),close=num("f-close");
+  const b1e=document.getElementById(`bb-${tfk}-band1`),b3e=document.getElementById(`bb-${tfk}-band3`);
+  const b1=b1e?parseFloat(b1e.value):NaN,band1=isNaN(b1)?null:b1;const b3=b3e?parseFloat(b3e.value):NaN,band3=isNaN(b3)?null:b3;
+  const g1=(band1!=null&&close!=null)?(type==='bull'?close>=band1*0.99:close<=band1*0.99):false;
+  const g2=!!(document.getElementById(`bb-${tfk}-g2`)||{}).checked,g3=!!(document.getElementById(`bb-${tfk}-g3`)||{}).checked,g4=!!(document.getElementById(`bb-${tfk}-g4`)||{}).checked;
+  const s1=bbScoreLevel(tfk,'TF1',type,close,band3),s2=bbScoreLevel(tfk,'TF2',type,close,band3),s3=tf3?bbScoreLevel(tfk,'TF3',type,close,band3):0,total=s1+s2+s3;
+  const allG=g1&&g2&&g3&&g4,pass=(s2>=11)||(total>=34);
+  return {type,tf2,tf3,close,band1,band3,g1,g2,g3,g4,allG,s1,s2,s3,total,pass,verdict:!allG?'unlikely':(pass?'probabile':'insufficiente'),bandMissing:(band1==null||close==null)};
+}
+function updBB(tfk){if(!document.getElementById(`bb-${tfk}-result`))return;const st=bbState(tfk),bl=st.type==='bull'?'TBB':'BBB';
+  document.getElementById(`bb-${tfk}-g1`).innerHTML=`Gate 1 (Close vs ${bl} TF1 ×0.99): ${st.bandMissing?`<span style="color:var(--muted)">inserisci Close e ${bl} TF1</span>`:`<span style="color:${st.g1?'var(--won)':'var(--lost)'}">${st.g1?'OK ✓':'fallito ✗'}</span>`}`;
+  const set=(lv,v)=>{const e=document.getElementById(`bb-${tfk}-${lv}-sc`);if(e)e.innerHTML=`Score ${lv}: <b>${v}</b>`};set('TF1',st.s1);set('TF2',st.s2);if(st.tf3)set('TF3',st.s3);
+  if(st.tf3){const ae=document.getElementById(`bb-${tfk}-TF3-r0-auto`);if(ae)ae.innerHTML=`${autoBandTxt(st.type)}: <b>+${autoBand(st.type,st.close,st.band3)}</b>`}
+  const res=document.getElementById(`bb-${tfk}-result`);const sc=`(TF1 ${st.s1} · TF2 ${st.s2}${st.tf3?` · TF3 ${st.s3}`:''} · Total ${st.total})`;
+  if(!st.allG){res.className="verdict v-exit";res.innerHTML=`⚠ Espansione BB POCO PROBABILE — gate eliminatorio mancante. ${sc}`}
+  else if(st.pass){res.className="verdict v-stay";res.innerHTML=`✓ Espansione BB PROBABILE — gate OK e ${st.s2>=11?`TF2 ${st.s2} ≥ 11`:`Total ${st.total} ≥ 34`}. ${sc}`}
+  else{res.className="verdict v-3c";res.innerHTML=`Gate OK ma score insufficiente: TF2 ${st.s2} &lt; 11 e Total ${st.total} &lt; 34. ${sc}`}
+}
+function toggleBB(tfk){const c=document.getElementById(`bb-${tfk}-on`);const w=document.getElementById(`bb-${tfk}-wrap`);if(c&&c.checked){w.innerHTML=renderBBBlock(tfk);updBB(tfk)}else if(w)w.innerHTML=""}
+function rerenderOpenBB(){TFS_FULL.forEach(tf=>{const c=document.getElementById(`bb-${tf.k}-on`);if(c&&c.checked){document.getElementById(`bb-${tf.k}-wrap`).innerHTML=renderBBBlock(tf.k);updBB(tf.k)}})}
+function readBBAll(){const out={};TFS_FULL.forEach(tf=>{const c=document.getElementById(`bb-${tf.k}-on`);if(c&&c.checked){const st=bbState(tf.k);out[tf.k]={type:st.type,tf2:st.tf2,tf3:st.tf3,band1:st.band1,band3:st.band3,g1:st.g1,g2:st.g2,g3:st.g3,g4:st.g4,s1:st.s1,s2:st.s2,s3:st.s3,total:st.total,verdict:st.verdict}}});return out}
+function bbSummaryForTrade(t){if(!t.bb||!Object.keys(t.bb).length)return"";return '<div class="kv"><b>BB Analysis (espansione):</b></div>'+Object.entries(t.bb).map(([k,b])=>{const col=b.verdict==='probabile'?'var(--won)':(b.verdict==='unlikely'?'var(--lost)':'var(--warn)');const vt=b.verdict==='probabile'?'PROBABILE':(b.verdict==='unlikely'?'POCO PROBABILE (gate)':'score insufficiente');return `<div class="kv tflist">TF1 ${k} (${b.type}): TF1 ${b.s1} · TF2 ${b.s2}${b.tf3?` · TF3 ${b.s3}`:''} · Total ${b.total} — <span style="color:${col};font-weight:600">${vt}</span></div>`}).join("")}
+
+// ---- save ----
+function saveTrade(){
+  const sym=val("f-symbol");if(!sym){flash("new-flash","Inserisci il simbolo","var(--lost)");return}
+  const prem=num("o-prem");if(prem===null||prem<=0){flash("new-flash","Inserisci il premio pagato","var(--lost)");return}
+  const supCells=readCells(entryItems(fType),ENTRY_TFS,"se");const tl=tally(supCells);
+  trades.push({id:uid(),status:"open",date:val("f-date")||todayISO(),symbol:sym.toUpperCase(),type:fType,close:num("f-close"),
+    sliMarket:val("sli-mkt2"),sliSub:val("sli-sub"),support:supCells,supHard:tl.hardEff,supSoft:tl.softEff,tf:readTFAll(),
+    weekly:document.getElementById("c-weekly").checked,daily5:document.getElementById("c-daily5").checked,threeday2:document.getElementById("c-3d2").checked,
+    catalyst:val("f-cat"),complete:setupComplete(),color:val("f-color"),pp:val("f-pp"),target:val("f-target"),
+    strike:num("o-strike"),exp:val("o-exp"),premIn:prem,noteIn:val("o-note"),
+    candles:[],exitDate:null,premOut:null,dirCorrect:null,exitReason:null,noteOut:null,bb:readBBAll()});
+  persist();resetForm();flash("new-flash","Salvato ✓","var(--won)");render()}
+function resetForm(){["f-symbol","f-close","f-color","f-pp","f-target","o-strike","o-exp","o-prem","o-note"].forEach(id=>document.getElementById(id).value="");
+  ["c-weekly","c-daily5","c-3d2"].forEach(id=>document.getElementById(id).checked=false);
+  document.getElementById("sli-mkt2").value="no";document.getElementById("sli-sub").value="none";
+  document.getElementById("f-date").value=todayISO();document.getElementById("f-cat").value="nessuno";
+  renderEntryMx();buildTFModule();refreshAllTF();updEntry();checkSli()}
+function flash(id,msg,color){const e=document.getElementById(id);e.style.color=color||"var(--won)";e.textContent=msg;setTimeout(()=>e.textContent="",2500)}
+
+// ---- verdetto candela ----
+function verdictFor(i,within7h,entryEvid,working,t){
+  if(within7h&&entryEvid!=null&&entryEvid<3)return{level:"exit",text:`REGOLA 7 ORE → evidenza d'ingresso scesa a ${entryEvid} (<3) nel 1° giorno: CHIUDI SUBITO.`};
+  const isW=working==="si",thr=isW?5:4;
+  if(i<=3)return{level:"c3",text:`Periodo 3 candele (${i}/3): ignora il movimento. Exit annotati: ${t.total} (valutazione dalla 4ª). Regola 7 ore attiva nel 1° giorno.`};
+  if(t.total>=thr){let q=` Qualità: ${t.hardEff} hard / ${t.softEff} soft.`;if(t.hardEff===0)q+=" Tutti soft: con l'elephant è una scelta (puoi restare), contro l'elephant bastano per uscire.";return{level:"exit",text:`ESCI → ${t.total} exit components (trade ${isW?"funzionante, soglia 5":"NON funzionante, soglia 4"}).`+q}}
+  return{level:"stay",text:`RESTA → ${t.total}/${thr} exit components (${isW?"funzionante":"non funzionante"}). ${t.hardEff} hard / ${t.softEff} soft. Non si accumulano.`}}
+
+// ---- OPEN ----
+function renderOpen(){const wrap=document.getElementById("open-list");const open=trades.filter(t=>t.status==="open").sort((a,b)=>a.date<b.date?1:-1);
+  wrap.innerHTML=open.length?open.map(cardOpen).join(""):'<div class="empty">Nessun trade aperto.</div>';
+  open.forEach(t=>{const el=document.getElementById("xmx-"+t.id);if(el)el.innerHTML=matrix(exitItems(t.type),EXIT_TFS,"xe-"+t.id,`updExit('${t.id}')`);updExit(t.id);updEv(t.id)})}
+function updExit(id){const t=trades.find(x=>x.id===id);if(!t)return;const tl=tally(readCells(exitItems(t.type),EXIT_TFS,"xe-"+id));const e=document.getElementById("xcount-"+id);if(e)e.innerHTML=`Exit components: <b>${tl.total}</b> · ${tl.hardEff} hard / ${tl.softEff} soft`}
+function tfSummary(t){if(!t.tf)return"—";
+  const lines=TFS_FULL.map(tf=>{const o=t.tf[tf.k];if(!o)return null;const cs=ctxScore(o),ds=dirScore(o);const parts=[];if(pct3(cs))parts.push("ctx "+pct3(cs));if(pct3(ds))parts.push("dir "+pct3(ds));return parts.length?`<b>${tf.k}</b>: ${parts.join(" · ")}`:null}).filter(Boolean);
+  let obs=[];TFS_FULL.forEach(tf=>{const o=t.tf[tf.k];if(o&&o.obstacles)o.obstacles.forEach(r=>{if(r.name&&r.value!=null&&t.close!=null)obs.push({tf:tf.k,name:r.name,diff:t.close-r.value})})});obs.sort((a,b)=>b.diff-a.diff);
+  return (lines.join("<br>")||"—")+(obs.length?`<br><br><b>Ostacoli (per Diff vs Close):</b><br>`+obs.map(x=>{const pa=passedObs(t.type,x.diff);return `${x.tf} - ${x.name} - <span style="color:${dirColor(t.type)}">${(x.diff>=0?'+':'')+x.diff.toFixed(2)}$</span>${pa.p?` <span style="color:var(--warn)">${pa.short}</span>`:''}`}).join("<br>"):"")}
+function cardOpen(t){
+  const sliTxt=`SLI mkt: ${t.sliMarket||'-'} · sub: ${t.sliSub||'-'}`;const auto7h=t.candles.length<2;
+  let expWarn="";if(t.exp){const d=Math.round((new Date(t.exp)-new Date())/86400000);if(d<=10&&d>=-5)expWarn=`<div class="warnline">⚠ Vicino a scadenza (${d} gg): ricorda la drop-dead Friday (2° venerdì).</div>`}
+  const exitDirLabel=t.type==="call"?"segnali ribassisti (esci dalla call) + neutri":"segnali rialzisti (esci dalla put) + neutri";
+  return `<div class="card">
+    <h3>${esc(t.symbol)} <span class="badge up">${t.type==='call'?'CALL':'PUT'}</span> ${t.complete?'<span class="badge ok">setup completo</span>':'<span class="badge sub">sub-standard</span>'}</h3>
+    <div class="meta">Ingresso ${esc(t.date)} · close $${t.close??'—'} · strike ${t.strike??'—'} · scad. ${esc(t.exp)||'—'} · premio pagato <span class="mono">$${(t.premIn??0).toFixed(2)}</span> · ${sliTxt}</div>
+    <div class="kv">Hard support ${t.supHard||0} · catalizz. ${esc(t.catalyst)} · candela: ${esc(t.color)||'—'} · target: ${esc(t.target)||'—'}</div>
+    <details class="sec"><summary>Lettura multi-TF, predictive paragraph, support</summary>
+      <div class="kv tflist">${tfSummary(t)}</div>
+      <div class="kv"><b>Cluster ostacoli (zone di stop probabili):</b></div>
+      <div class="kv">${clusterHTMLForTrade(t)}</div>
+      ${bbSummaryForTrade(t)}
+      <div class="kv"><b>Predictive paragraph:</b> ${esc(t.pp)||'—'}</div>
+      <div class="kv"><b>Support:</b> ${(t.support||[]).map(c=>esc(c.n)+' ('+c.tf+')').join(', ')||'—'}</div></details>
+
+    <div class="tracker">
+      <div class="rules"><b>Regole.</b> 3 candele: ignori il movimento per le prime 3 candele 233. 7 ore: nel 1° giorno se l'evidenza d'ingresso scende sotto 3 → chiudi subito. Uscita: <b>5+</b> exit se funziona, <b>4+</b> se non funziona. Non si accumulano. Item: <b>${exitDirLabel}</b>. Per i neutri conta solo se vanno verso l'uscita.</div>
+      <div class="grid">
+        <div><label>Data candela</label><input type="date" id="cd-${t.id}" value="${todayISO()}"></div>
+        <div><label>Chiusura 233</label><select id="cs-${t.id}"><option>13:23</option><option>16:00</option></select></div>
+        <div class="full"><label>Il trade sta funzionando?</label><div class="seg" id="cw-${t.id}"><button data-v="si" class="on">Sì, funziona</button><button data-v="lat">Laterale</button><button data-v="no">Va contro</button></div></div>
+        <div class="full"><label class="chk"><input type="checkbox" id="c7-${t.id}" ${auto7h?'checked':''} onchange="toggle7h('${t.id}')"> Entro il 1° giorno (regola 7 ore attiva)</label></div>
+        <div class="full" id="ev-wrap-${t.id}" style="${auto7h?'':'display:none'}">
+          <label>Hard items d'ingresso ancora presenti (deseleziona quelli spariti · ≥3 per continuare)</label>
+          <div class="checks">${entryHardList(t).map((c,k)=>`<label class="chk"><input type="checkbox" id="ev-${t.id}-${k}" checked onchange="updEv('${t.id}')"> ${esc(c.n)} <span class="pill">${c.tf}</span>${c.k==="cond"?'<span class="k cond">cond</span>':''}</label>`).join("")||'<span class="tflist" style="margin:0">Nessun hard item registrato in ingresso.</span>'}</div>
+          <div class="counter" id="evcount-${t.id}"></div>
+        </div>
+      </div>
+      <label style="margin-top:12px">Exit components su questa candela — 233 / D / 3-day</label>
+      <div id="xmx-${t.id}"></div>
+      <div class="counter" id="xcount-${t.id}">Exit components: <b>0</b></div>
+      <div class="row-actions"><button class="btn sm" onclick="addCandle('${t.id}')">Valuta candela & salva</button></div>
+      ${expWarn}
+      ${t.candles.length?candleLog(t):''}
+    </div>
+
+    <details class="sec"><summary>Chiudi il trade (premio & esito)</summary>
+      <div class="grid" style="margin-top:10px">
+        <div><label>Data uscita</label><input type="date" id="x-date-${t.id}" value="${todayISO()}"></div>
+        <div><label>Premio incassato ($/contratto)</label><input type="number" step="any" id="x-prem-${t.id}" placeholder="0 se andata a zero"></div>
+        <div><label>Previsione corretta? (grafico come previsto)</label><select id="x-dir-${t.id}"><option value="">—</option><option value="yes">Sì</option><option value="partial">In parte</option><option value="no">No</option></select></div>
+        <div><label>Motivo uscita</label><select id="x-reason-${t.id}"><option value="">—</option><option value="exit_components">exit components</option><option value="7_ore">regola 7 ore</option><option value="earnings">2h prima earnings</option><option value="drop_dead_friday">drop-dead Friday</option><option value="invalidazione">invalidazione tesi</option><option value="altro">altro</option></select></div>
+        <div class="full"><label>Nota uscita (opz.)</label><input type="text" id="x-note-${t.id}"></div>
+      </div>
+      <div class="row-actions"><button class="btn sm" onclick="closeTrade('${t.id}')">Salva chiusura</button></div>
+    </details>
+
+    <div class="row-actions" style="border-top:1px solid var(--line2);padding-top:12px;margin-top:14px">
+      <button class="btn ghost sm" onclick="saveOne('${t.id}')">Salva su file</button>
+      <button class="btn sm danger" onclick="del('${t.id}')">Elimina</button></div>
+  </div>`}
+function candleLog(t){return `<table class="clog"><thead><tr><th>#</th><th>Quando</th><th>Stato</th><th>7h</th><th>Exit</th><th>H/S</th><th>Esito</th></tr></thead><tbody>${
+  t.candles.map(c=>{const cl=c.verdict.level==="exit"?"exit":(c.verdict.level==="c3"?"c3":"stay");const st={si:"funziona",lat:"laterale",no:"contro"}[c.working]||c.working;
+    return `<tr><td class="mono">${c.i}</td><td class="mono">${esc(c.when)} ${esc(c.slot)}</td><td>${st}</td><td class="mono">${c.within7h?(c.entryEvid==null?'—':c.entryEvid):'·'}</td><td class="mono">${c.total}</td><td class="mono">${c.hardEff||0}/${c.softEff||0}</td><td><span class="pill ${cl}">${c.verdict.level==="exit"?"USCITA":(c.verdict.level==="c3"?"3 candele":"resta")}</span></td></tr>
+    <tr><td></td><td colspan="6" style="color:var(--muted);font-size:12px;padding-top:0">${esc(c.verdict.text)}${c.cells&&c.cells.length?' · '+c.cells.map(x=>esc(x.n)+'('+x.tf+')').join(', '):''}</td></tr>`}).join("")
+}</tbody></table>`}
+document.addEventListener("click",e=>{const b=e.target.closest('.seg[id^="cw-"] button');if(b)b.parentElement.querySelectorAll("button").forEach(x=>x.classList.toggle("on",x===b))});
+function readWorking(id){const on=document.querySelector(`#cw-${id} button.on`);return on?on.dataset.v:"si"}
+function toggle7h(id){document.getElementById("ev-wrap-"+id).style.display=document.getElementById("c7-"+id).checked?"block":"none"}
+function addCandle(id){const t=trades.find(x=>x.id===id);if(!t)return;const i=t.candles.length+1;
+  const within7h=document.getElementById("c7-"+id).checked;
+  const ehl=entryHardList(t);let ev=0;ehl.forEach((c,k)=>{const e=document.getElementById(`ev-${id}-${k}`);if(e&&e.checked)ev++});
+  const entryEvid=within7h?ev:null;const working=readWorking(id);
+  const cells=readCells(exitItems(t.type),EXIT_TFS,"xe-"+id);const tl=tally(cells);const v=verdictFor(i,within7h,entryEvid,working,tl);
+  t.candles.push({i,when:document.getElementById("cd-"+id).value||todayISO(),slot:document.getElementById("cs-"+id).value,working,within7h,entryEvid,cells,total:tl.total,hardEff:tl.hardEff,softEff:tl.softEff,verdict:v});persist();render()}
+function closeTrade(id){const t=trades.find(x=>x.id===id);if(!t)return;const p=parseFloat(document.getElementById("x-prem-"+id).value);
+  if(isNaN(p)||p<0){alert("Inserisci il premio incassato (0 se andata a zero).");return}
+  t.premOut=p;t.exitDate=document.getElementById("x-date-"+id).value||todayISO();t.dirCorrect=document.getElementById("x-dir-"+id).value||null;
+  t.exitReason=document.getElementById("x-reason-"+id).value||null;t.noteOut=document.getElementById("x-note-"+id).value.trim()||null;t.status="closed";persist();render()}
+function del(id){if(!confirm("Eliminare questo trade?"))return;trades=trades.filter(t=>t.id!==id);persist();render()}
+
+// ---- HIST ----
+function pct(t){if(t.premIn==null||t.premOut==null||t.premIn===0)return null;return(t.premOut-t.premIn)/t.premIn*100}
+function daysHeld(t){if(!t.date||!t.exitDate)return null;return Math.round((new Date(t.exitDate)-new Date(t.date))/86400000)}
+function closedSet(){let c=trades.filter(t=>t.status==="closed");if(document.getElementById("only-complete").checked)c=c.filter(t=>t.complete);return c.sort((a,b)=>a.exitDate<b.exitDate?1:-1)}
+function renderHist(){const c=closedSet();const sw=document.getElementById("stats-wrap");const tw=document.getElementById("hist-table-wrap");
+  if(!c.length){sw.innerHTML="";tw.innerHTML='<div class="empty">Nessun trade chiuso ancora.</div>';return}
+  const N=c.length,profitable=c.filter(t=>{const p=pct(t);return p!=null&&p>0}).length,dirYes=c.filter(t=>t.dirCorrect==="yes").length,dirRated=c.filter(t=>t.dirCorrect).length;
+  const pcts=c.map(pct).filter(p=>p!=null),wins=pcts.filter(p=>p>0),losses=pcts.filter(p=>p<=0);
+  const avg=a=>a.length?a.reduce((s,x)=>s+x,0)/a.length:null,fmt=v=>v==null?'—':(v>0?'+':'')+v.toFixed(1)+'%';
+  const profitRate=Math.round(profitable/N*100),dirRate=dirRated?Math.round(dirYes/dirRated*100):null;
+  sw.innerHTML=`<div class="stats">
+    <div class="stat hl"><div class="lab">In profitto (soldi)</div><div class="val mono">${profitRate}%</div><div class="meta" style="font-size:12px;color:var(--muted)">${profitable}/${N}</div></div>
+    <div class="stat"><div class="lab">Direzione corretta</div><div class="val mono">${dirRate==null?'—':dirRate+'%'}</div><div class="meta" style="font-size:12px;color:var(--muted)">${dirYes}/${dirRated||0}</div></div>
+    <div class="stat"><div class="lab">Media % vincenti</div><div class="val mono" style="color:var(--won)">${fmt(avg(wins))}</div></div></div>
+   <div class="stats">
+    <div class="stat"><div class="lab">Media % perdenti</div><div class="val mono" style="color:var(--lost)">${fmt(avg(losses))}</div></div>
+    <div class="stat"><div class="lab">Media % complessiva</div><div class="val mono">${fmt(avg(pcts))}</div></div>
+    <div class="stat"><div class="lab">Trade chiusi</div><div class="val mono">${N}</div></div></div>
+   ${dirRate!=null?gapNote(dirRate,profitRate):''}`;
+  tw.innerHTML=`<table class="hist"><thead><tr><th>Uscita</th><th>Simbolo</th><th>Tipo</th><th>Setup</th><th>Direzione</th><th class="num">% opzione</th><th class="num">Giorni</th><th class="num">Candele</th><th>Motivo</th></tr></thead><tbody>${c.map(rowHist).join("")}</tbody></table>`}
+function gapNote(dir,profit){const gap=dir-profit;
+  if(gap>=10)return`<div class="gap">Direzione corretta <b>${dir}%</b> ma in profitto solo <b>${profit}%</b>. <b>I ${gap} punti di scarto sono il costo di theta+spread+vega sui movimenti lenti.</b></div>`;
+  if(profit>dir)return`<div class="gap">In profitto (<b>${profit}%</b>) più della direzione "corretta" (<b>${dir}%</b>): monetizzi bene le mosse parziali.</div>`;
+  return`<div class="gap">Direzione <b>${dir}%</b>, profitto <b>${profit}%</b>: scarto contenuto.</div>`}
+function rowHist(t){const p=pct(t),pc=p==null?'':(p>0?'win':'loss');const dp={yes:['y','Sì'],partial:['p','In parte'],no:['n','No']}[t.dirCorrect]||['','—'],d=daysHeld(t);
+  return`<tr><td class="mono">${esc(t.exitDate)||'—'}</td><td><b>${esc(t.symbol)}</b></td><td>${t.type==='call'?'Call':'Put'}</td><td>${t.complete?'<span class="pill y">completo</span>':'<span class="pill p">sub</span>'}</td><td><span class="pill ${dp[0]}">${dp[1]}</span></td><td class="num pct ${pc}">${p==null?'—':(p>0?'+':'')+p.toFixed(1)+'%'}</td><td class="num mono">${d==null?'—':d}</td><td class="num mono">${t.candles?t.candles.length:0}</td><td>${esc(t.exitReason)||'—'}</td></tr>`}
+
+// ---- file I/O ----
+function download(content,name,mime){const b=new Blob([content],{type:mime+";charset=utf-8"});const a=document.createElement("a");a.href=URL.createObjectURL(b);a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)}
+function saveOne(id){const t=trades.find(x=>x.id===id);if(!t)return;download(JSON.stringify(t,null,2),`Backwork_${t.symbol}_${t.date}.json`,"application/json")}
+function importOne(ev){const f=ev.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{try{const t=JSON.parse(r.result);if(t&&t.id&&t.symbol){const i=trades.findIndex(x=>x.id===t.id);if(i>=0)trades[i]=t;else trades.push(t);persist();render();alert("Trade "+t.symbol+" importato.")}else alert("File non valido.")}catch(e){alert("File non valido.")}ev.target.value=""};r.readAsText(f)}
+function exportJSON(){download(JSON.stringify(trades,null,2),"backup_backwork.json","application/json")}
+function importJSON(ev){const f=ev.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{try{const d=JSON.parse(r.result);if(Array.isArray(d)){if(confirm("Importare "+d.length+" trade? (sostituisce i dati attuali)")){trades=d;persist();render()}}else alert("File non valido.")}catch(e){alert("File non valido.")}ev.target.value=""};r.readAsText(f)}
+function csvCell(v){if(v===true)return"Sì";if(v===false)return"No";if(v==null)return"";return '"'+String(v).replace(/"/g,'""')+'"'}
+function exportCSV(){
+  const cols=["date","symbol","type","close","complete","sliMarket","sliSub","supHard","supSoft","supWhich","weekly","daily5","threeday2","catalyst","color","target","pp","strike","exp","premIn","exitDate","premOut","pctOpz","dirCorrect","exitReason","giorni","nCandele","bbTxt","noteIn","noteOut"];
+  const head=["Data ingresso","Simbolo","Tipo","Close","Setup completo","SLI Market","SLI Sub-Index","Hard support","Soft support","Quali support","Weekly","Daily≥5","3day≥2","Catalizzatore","Colore","Target","Predictive paragraph","Strike","Scadenza","Premio pagato","Data uscita","Premio incassato","% opzione","Direzione corretta","Motivo uscita","Giorni","N candele","BB Analysis","Note ingresso","Note uscita"];
+  const rows=trades.map(t=>{const o={...t,supWhich:(t.support||[]).map(c=>c.n+"("+c.tf+")").join(" | "),pctOpz:(pct(t)==null?"":pct(t).toFixed(2)),giorni:(daysHeld(t)==null?"":daysHeld(t)),nCandele:t.candles?t.candles.length:0,bbTxt:(t.bb?Object.entries(t.bb).map(function(e){return e[0]+":"+e[1].verdict+"(T2 "+e[1].s2+"/Tot "+e[1].total+")"}).join(" | "):"")};return cols.map(c=>csvCell(o[c]))});
+  download("\uFEFF"+[head.join(";"),...rows.map(r=>r.join(";"))].join("\r\n"),"diario_backwork.csv","text/csv")}
+
+// ---- nav / boot ----
+document.querySelectorAll("nav button").forEach(b=>{b.onclick=()=>{document.querySelectorAll("nav button").forEach(x=>x.classList.toggle("on",x===b));["new","open","hist"].forEach(v=>document.getElementById("view-"+v).style.display=(v===b.dataset.view?"block":"none"))}});
+function render(){document.getElementById("c-open").textContent=trades.filter(t=>t.status==="open").length;document.getElementById("c-hist").textContent=trades.filter(t=>t.status==="closed").length;renderOpen();renderHist()}
+renderEntryMx();buildTFModule();refreshAllTF();document.getElementById("f-date").value=todayISO();updEntry();checkSli();render();
+</script>
 </body>
 </html>
